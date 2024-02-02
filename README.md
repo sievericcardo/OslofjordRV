@@ -14,20 +14,18 @@ The API is already called and the trace is already generated, so all you have to
 
 2. Instrument the C code:
 
-	java -jar tessla.jar instrumenter spec.tessla main.c /usr/lib/gcc/x86_64-linux-gnu/11/include/
+		java -jar tessla.jar instrumenter spec.tessla main.c /usr/lib/gcc/x86_64-linux-gnu/11/include/
 
 3. Compile the instrumented C code:
 
-	gcc main.c.instrumented.c -lcurl -llogging -pthread -ldl -o main
+		gcc main.c.instrumented.c -lcurl -llogging -pthread -ldl -o main
 
 4. Start the Docker container for the database and API as described in the OslofjordDB repository.
 
 5. Execute the compiled program to generate a trace that we can monitor:
 
-	./main
+		./main
 
 6. Monitor the trace:
 
-	java -jar tessla.jar interpreter spec.tessla trace.log
-
-
+		java -jar tessla.jar interpreter spec.tessla trace.log
