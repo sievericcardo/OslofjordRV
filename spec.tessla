@@ -1,0 +1,12 @@
+@InstFunctionReturn("do_something")
+in temperature: Events[Float]
+def over_limit = temperature >. 7.66
+out over_limit
+
+@InstFunctionCall("do_something")
+in call: Events[Unit]
+def n_calls := count(call)
+out n_calls
+
+
+
