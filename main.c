@@ -61,21 +61,11 @@ static void read_and_clean_data(char *filename) {
 		token = strtok_r(str, delim, &outer_saveptr);
 		char *inner_token;
 		while (token != NULL) {
-			if (strstr(token, "turbidity") != NULL) {
-				printf("TURBIDITY:\n");
-			}
-			else if (strstr(token, "temperature") != NULL) {
+			if (strstr(token, "temperature") != NULL) {
 				char *substr = strstr(token, "temperature");
-				//substr looks like 'temperature":<insert decimal>'.
-				inner_token = strtok_r(substr, ":", &inner_saveptr);
-				int i = 1;
-				while (inner_token != NULL) {
-					if (i == 2) {
-						do_something(inner_token);
-					}
-					i++;
-					inner_token = strtok_r(NULL, ":", &inner_saveptr);
-				}
+				//'substr' looks like 'temperature":<insert decimal>'.
+				inner_token = strtok_r(substr, "temprau\":", &inner_saveptr);
+				do_something(inner_token);
 			}
 			token = strtok_r(NULL, delim, &outer_saveptr);
 		}

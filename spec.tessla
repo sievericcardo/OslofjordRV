@@ -1,4 +1,11 @@
 @InstFunctionReturn("do_something")
 in temperature: Events[Float]
-def over_limit = temperature >. 7.47
-out over_limit
+
+def suitable_spawning_temp = temperature <=. 12.0 && temperature >=. 0.0
+out suitable_spawning_temp
+
+def suitable_living_temp = temperature <=. 15.0 && temperature >=. 0.0
+out suitable_living_temp
+
+def preferred_spawning_temp = temperature <=. 6.0 && temperature >=. 0.0
+out preferred_spawning_temp
