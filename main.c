@@ -3,60 +3,92 @@
 #include <string.h>
 #include <curl/curl.h>
 
+
 static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
 	size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
 	return written;
 }
 
-float do_something(char val[]) {
-	//Converts a string to a float.
-	//Is done in a seperate function so that TeSSLa has a function return value to monitor.
-	return atof(val);
-}
 
-int main(void) {
+static void query_and_write_file(char *filename) {
 	CURL *curl;
-	CURLcode res;
 	struct curl_slist *list = NULL;
-
-	static const char *bodyfilename = "body.out";
-	FILE *bodyfile;
-
+	FILE *file;
 	curl = curl_easy_init();
 	if (curl) {
-		//Performs query and writes result to file 'body.out'.
+		//Endpoint URL
 		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/data");
 		
+		//Add headers
 		list = curl_slist_append(list, "Content-Type: application/json");
 		list = curl_slist_append(list, "x-hasura-admin-secret: mylongsecretkey");
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
-
+		
+		//Pass response to write function
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-
-		bodyfile = fopen(bodyfilename, "wb");
-
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, bodyfile);
-
+		
+		//Write response to file
+		file = fopen(filename, "wb");
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
 		curl_easy_perform(curl);
-
-		fclose(bodyfile);
-
+		fclose(file);
+		
 		curl_easy_cleanup(curl);
-
-		//Reads the results from the query from file 'body.out'.
-		bodyfile = fopen(bodyfilename, "r");
-		char str[255];
-		int i = 0;
-		while(fscanf(bodyfile, "%s", str) != EOF) {
-			char *t1 = strtok(str, ":");
-			char *t2 = strtok(NULL, ":");
-			char *t3 = strtok(t2, "}");
-			if (i!=0) {
-				do_something(t3);
-			}
-			i++;
-		}
-		fclose(bodyfile);
+		curl_global_cleanup();
 	}
+}
+
+
+
+
+static float do_something(char* str) {
+	//Converts temperature value to float.
+	//Necessary so that tessla spec has a return value to monitor.
+	return atof(str);
+}
+
+
+static void read_and_clean_data(char *filename) {
+	FILE *file = fopen(filename, "r");
+	char str[255];
+	char *token;
+	char delim[10] = ",][}{";
+	
+	char *outer_saveptr = NULL;
+	char *inner_saveptr = NULL;
+
+	while (fscanf(file, "%s", str) == 1) {
+		token = strtok_r(str, delim, &outer_saveptr);
+		char *inner_token;
+		while (token != NULL) {
+			if (strstr(token, "turbidity") != NULL) {
+				printf("TURBIDITY:\n");
+			}
+			else if (strstr(token, "temperature") != NULL) {
+				char *substr = strstr(token, "temperature");
+				//substr looks like 'temperature":<insert decimal>'.
+				inner_token = strtok_r(substr, ":", &inner_saveptr);
+				int i = 1;
+				while (inner_token != NULL) {
+					if (i == 2) {
+						do_something(inner_token);
+					}
+					i++;
+					inner_token = strtok_r(NULL, ":", &inner_saveptr);
+				}
+			}
+			token = strtok_r(NULL, delim, &outer_saveptr);
+		}
+	}
+	fclose(file);
+}
+
+
+
+
+int main(void) {
+	char *filename = "response.json";
+	query_and_write_file(filename);
+	read_and_clean_data(filename);
 	return 0;
 }
