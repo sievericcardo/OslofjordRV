@@ -9,7 +9,9 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
 }
 
 float do_something(char val[]) {
-        return atof(val);
+	//Converts a string to a float.
+	//Is done in a seperate function so that TeSSLa has a function return value to monitor.
+	return atof(val);
 }
 
 int main(void) {
@@ -22,7 +24,8 @@ int main(void) {
 
 	curl = curl_easy_init();
 	if (curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/salinity");
+		//Performs query and writes result to file 'body.out'.
+		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/data");
 		
 		list = curl_slist_append(list, "Content-Type: application/json");
 		list = curl_slist_append(list, "x-hasura-admin-secret: mylongsecretkey");
@@ -40,6 +43,7 @@ int main(void) {
 
 		curl_easy_cleanup(curl);
 
+		//Reads the results from the query from file 'body.out'.
 		bodyfile = fopen(bodyfilename, "r");
 		char str[255];
 		int i = 0;

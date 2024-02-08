@@ -10,10 +10,11 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
 
 void do_something_return(float value, char * arg0);
 float do_something(char val[]) {
-        return  ({float ret = atof(val); do_something_return(ret, val); ret;});
+	//Converts a string to a float.
+	//Is done in a seperate function so that TeSSLa has a function return value to monitor.
+	return  ({float ret = atof(val); do_something_return(ret, val); ret;});
 }
 
-void do_something_call(char * arg0);
 int main(void) {
 	CURL *curl;
 	CURLcode res;
@@ -24,7 +25,8 @@ int main(void) {
 
 	curl = curl_easy_init();
 	if (curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/salinity");
+		//Performs query and writes result to file 'body.out'.
+		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/data");
 		
 		list = curl_slist_append(list, "Content-Type: application/json");
 		list = curl_slist_append(list, "x-hasura-admin-secret: mylongsecretkey");
@@ -42,6 +44,7 @@ int main(void) {
 
 		curl_easy_cleanup(curl);
 
+		//Reads the results from the query from file 'body.out'.
 		bodyfile = fopen(bodyfilename, "r");
 		char str[255];
 		int i = 0;
@@ -50,7 +53,7 @@ int main(void) {
 			char *t2 = strtok(NULL, ":");
 			char *t3 = strtok(t2, "}");
 			if (i!=0) {
-				({char * __int_arg_call0; do_something_call(__int_arg_call0 = t3); do_something(__int_arg_call0);});
+				do_something(t3);
 			}
 			i++;
 		}
