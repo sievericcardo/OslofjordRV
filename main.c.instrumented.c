@@ -41,34 +41,48 @@ static void query_and_write_file(char *filename) {
 
 
 
-void do_something_return(float value, char * arg0);
-static float do_something(char* str) {
+void ret_temperature_return(float value, char * arg0);
+static float ret_temperature(char *str) {
 	//Converts temperature value to float.
-	//Necessary so that tessla spec has a return value to monitor.
-	return  ({float ret = atof(str); do_something_return(ret, str); ret;});
+	//Function necessary so that tessla spec has a return value to monitor.
+	return  ({float ret = atof(str); ret_temperature_return(ret, str); ret;});
 }
 
 
+
 static void read_and_clean_data(char *filename) {
-	FILE *file = fopen(filename, "r");
+	FILE *file = fopen("response.json", "r");
 	char str[255];
-	char *token;
-	char delim[10] = ",][}{";
 	
+	char *outer_token;
+	char outer_delim[10] = ",][}{";
 	char *outer_saveptr = NULL;
 	char *inner_saveptr = NULL;
 
 	while (fscanf(file, "%s", str) == 1) {
-		token = strtok_r(str, delim, &outer_saveptr);
+		char *substr = strstr(str, "\"temp");
+		outer_token = strtok_r(substr, outer_delim, &outer_saveptr);
 		char *inner_token;
-		while (token != NULL) {
-			if (strstr(token, "temperature") != NULL) {
-				char *substr = strstr(token, "temperature");
-				//'substr' looks like 'temperature":<insert decimal>'.
-				inner_token = strtok_r(substr, "temprau\":", &inner_saveptr);
-				do_something(inner_token);
+		while (outer_token != NULL) {
+			if (strstr(outer_token, "temperature") != NULL) {
+				inner_token = strtok_r(outer_token, "temprau\":", &inner_saveptr);
+				ret_temperature(inner_token);
 			}
-			token = strtok_r(NULL, delim, &outer_saveptr);
+			/*
+			else if (strstr(outer_token, "record_time") != NULL) {
+			char inner_delim[10] = "\"";
+				inner_token = strtok_r(outer_token, inner_delim, &inner_saveptr);
+				int i = 0;
+				while (inner_token != NULL) {
+					if (i == 2) {
+						//inner_token equals record_time value.
+					}
+					i++;
+					inner_token = strtok_r(NULL, inner_delim, &inner_saveptr);
+				}
+			}
+			*/
+			outer_token = strtok_r(NULL, outer_delim, &outer_saveptr);
 		}
 	}
 	fclose(file);
@@ -83,5 +97,33 @@ int main(void) {
 	read_and_clean_data(filename);
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #include "main.c.callbacks.h"
