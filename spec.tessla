@@ -10,8 +10,3 @@ out suitable_living_temp
 
 def preferred_spawning_temp = temperature <=. 6.0 && temperature >=. 0.0
 out preferred_spawning_temp
-
-
-@InstFunctionReturn("ret_record_time")
-in record_time: Events[Unit]
-out record_time

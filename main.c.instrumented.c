@@ -44,7 +44,7 @@ static void query_and_write_file(char *filename) {
 void ret_temperature_return(float value, char * arg0);
 static float ret_temperature(char *str) {
 	//Converts temperature value to float.
-	//Function necessary so that tessla spec has a return value to monitor.
+	//Function necessary so that the TeSSLa specification has a return value to monitor.
 	return  ({float ret = atof(str); ret_temperature_return(ret, str); ret;});
 }
 
@@ -59,16 +59,19 @@ static void read_and_clean_data(char *filename) {
 	char *outer_saveptr = NULL;
 	char *inner_saveptr = NULL;
 
+	//Reads response.json "word for word", i.e. splits it at every whitespace.
 	while (fscanf(file, "%s", str) == 1) {
 		char *substr = strstr(str, "\"temp");
 		outer_token = strtok_r(substr, outer_delim, &outer_saveptr);
 		char *inner_token;
 		while (outer_token != NULL) {
+			//Checks if substring has a temperature value.
 			if (strstr(outer_token, "temperature") != NULL) {
 				inner_token = strtok_r(outer_token, "temprau\":", &inner_saveptr);
 				ret_temperature(inner_token);
 			}
 			/*
+			//Checks if substring has a record_time value.
 			else if (strstr(outer_token, "record_time") != NULL) {
 			char inner_delim[10] = "\"";
 				inner_token = strtok_r(outer_token, inner_delim, &inner_saveptr);
