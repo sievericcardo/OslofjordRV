@@ -1,0 +1,5 @@
+mutation MyMutation {
+  insert_runtime_verification_one(object: {temperature: "6.6"}) {
+    temperature
+  }
+}
