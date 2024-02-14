@@ -95,8 +95,12 @@ static void read_and_clean_data(char *filename) {
 
 int main(void) {
 	char *filename = "response.json";
+	//Get data
 	query_and_write_file(filename);
+	//Verification
 	read_and_clean_data(filename);
+	//Post data
+	//TODO
 	return 0;
 }
 
