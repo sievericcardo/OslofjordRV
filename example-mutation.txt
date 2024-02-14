@@ -3,3 +3,5 @@ mutation MyMutation {
     temperature
   }
 }
+
+Må først lage en runtime_verification tabell i Hasura
