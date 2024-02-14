@@ -8,3 +8,5 @@ mutation InsertMultipleTemperatures {
     affected_rows
   }
 }
+
+Add a column for record_time (or some other variable that can be used for matching with simulation data)
