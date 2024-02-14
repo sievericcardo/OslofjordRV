@@ -100,34 +100,6 @@ int main(void) {
 	//Verification
 	read_and_clean_data(filename);
 	//Post data
-	//TODO
+	//TODO, see the libcurl post example
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
