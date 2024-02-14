@@ -92,6 +92,36 @@ static void read_and_clean_data(char *filename) {
 
 
 
+//TODO: finish and test
+static void post_data(char *filename) {
+	CURL *curl;
+	struct curl_slist *list = NULL;
+	FILE *file;
+	curl = curl_easy_init();
+	if (curl) {
+		//Endpoint URL
+		curl_easy_setopt(curl, CURLOPT_URL, /*Add post url here! Need to make one in hasura first*/);
+		
+		//Add headers
+		list = curl_slist_append(list, "Content-Type: application/json");
+		list = curl_slist_append(list, "x-hasura-admin-secret: mylongsecretkey");
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
+		
+		//Specify the POST data
+		//TODO: open file
+		while (/*there is still data to parse*/) {
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, /*data to post*/);
+		}
+		
+		//Perform post
+		curl_easy_perform(curl);
+		
+		curl_easy_cleanup(curl);
+		curl_global_cleanup();
+	}
+}
+
+
 
 int main(void) {
 	char *filename = "response.json";
@@ -101,5 +131,6 @@ int main(void) {
 	read_and_clean_data(filename);
 	//Post data
 	//TODO, see the libcurl post example
+	//post_data("output.out");
 	return 0;
 }
