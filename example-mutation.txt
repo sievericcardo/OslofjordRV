@@ -1,7 +1,10 @@
-mutation MyMutation {
-  insert_runtime_verification_one(object: {temperature: "6.6"}) {
-    temperature
+mutation InsertMultipleTemperatures {
+  insert_runtime_verification(
+    objects: [
+      {temperature: "3.1"},
+      {temperature: "3.2"}
+    ]
+  ) {
+    affected_rows
   }
 }
-
-Må først lage en runtime_verification tabell i Hasura
