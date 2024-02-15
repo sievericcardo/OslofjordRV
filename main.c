@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
+#include <cjson/cJSON.h>
 
 
 
@@ -12,7 +13,7 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
 	return written;
 }
 
-void get_data(char *filename) {
+void get_data() {
 	CURL *curl;
 	struct curl_slist *list = NULL;
 	FILE *file;
@@ -30,7 +31,7 @@ void get_data(char *filename) {
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 		
 		//Write response to file
-		file = fopen(filename, "wb");
+		file = fopen("response.json", "wb");
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
 		curl_easy_perform(curl);
 		fclose(file);
@@ -43,21 +44,30 @@ void get_data(char *filename) {
 
 
 
-//-----VERIFY DATA-----
-void my_func(float temp) {
-	//Function using values so TeSSLa monitor has something to monitor
-	printf("Temperature: %f\n", temp);
+//-----PARSE DATA-----
+int my_func(float temp, int rec_num) {
+	//TeSSLa needs a function to return or recieve values in order to monitor them
+	return 0;
 }
 
-void verify_data(char *filename) {
-	FILE *file = fopen(filename, "r");
-	char str[255];
-	while (fscanf(file, "%s", str) == 1) {
-		//Getting temperature value
-		char *temp_token = strtok(strtok(strstr(str, "temp"), ","), "temperature\":");
-		my_func(atof(temp_token));
+void parse_data() {
+	//Read the file contents into a string 
+	FILE *file = fopen("response.json", "r"); 
+	char str[1024]; 
+	int len = fread(str, 1, sizeof(str), file); 
+	fclose(file); 
+
+	//Parse and access the JSON data 
+	cJSON *root = cJSON_Parse(str);
+	cJSON *turb_array = cJSON_GetObjectItem(root, "turbidity");
+	cJSON *iterator = NULL;
+	cJSON_ArrayForEach(iterator, turb_array) {
+		cJSON *temp = cJSON_GetObjectItem(iterator, "temperature");
+		cJSON *rec_num = cJSON_GetObjectItem(iterator, "record_number");
+		my_func(temp->valuedouble, rec_num->valueint);
 	}
-	fclose(file);
+
+	cJSON_Delete(root);
 }
 
 
@@ -66,19 +76,25 @@ void verify_data(char *filename) {
 //-----POST DATA-----
 /*
 TODO:
+Use libcurl to post data in "output.out" to the database.
+*/
 
-Somehow merge output.out with response.json into a csv file.
-This way; the data can be posted back to the database.
+
+
+
+//-----CONVERT DATA TO CSV
+/*
+TODO:
+Turn "output.out" data into a csv format so that others in can easily add it to the database on their machines.
+Will no longer be necessary once database is up and running on server.
 */
 	
 
 
 
-
+//-----MAIN-----
 int main(void) {
-	char *filename = "response.json";
-	//get_data(filename);
-	verify_data(filename);
-	//post_data("output.out");
+	get_data();
+	parse_data();
 	return 0;
 }

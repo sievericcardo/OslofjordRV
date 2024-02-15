@@ -1,11 +1,17 @@
 @InstFunctionCallArg("my_func", 0)
 in temperature: Events[Float]
+out temperature
 
-def suitable_spawning_temp = temperature <=. 12.0 && temperature >=. 0.0
-out suitable_spawning_temp
+def suitable_spawning_temp_cod = temperature <=. 12.0 && temperature >=. 0.0
+out suitable_spawning_temp_cod
 
-def suitable_living_temp = temperature <=. 15.0 && temperature >=. 0.0
-out suitable_living_temp
+def suitable_living_temp_cod = temperature <=. 15.0 && temperature >=. 0.0
+out suitable_living_temp_cod
 
-def preferred_spawning_temp = temperature <=. 6.0 && temperature >=. 0.0
-out preferred_spawning_temp
+def preferred_spawning_temp_cod = temperature <=. 6.0 && temperature >=. 0.0
+out preferred_spawning_temp_cod
+
+
+@InstFunctionCallArg("my_func", 1)
+in record_number: Events[Int]
+out record_number

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
+#include <cjson/cJSON.h>
 
 
 
@@ -12,7 +13,7 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
 	return written;
 }
 
-void get_data(char *filename) {
+void get_data() {
 	CURL *curl;
 	struct curl_slist *list = NULL;
 	FILE *file;
@@ -30,7 +31,7 @@ void get_data(char *filename) {
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 		
 		//Write response to file
-		file = fopen(filename, "wb");
+		file = fopen("response.json", "wb");
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
 		curl_easy_perform(curl);
 		fclose(file);
@@ -43,72 +44,58 @@ void get_data(char *filename) {
 
 
 
-//-----VERIFY DATA-----
-void my_func(float temp) {
-	//Function using values so TeSSLa monitor has something to monitor
-	printf("Temperature: %f\n", temp);
+//-----PARSE DATA-----
+int my_func(float temp, int rec_num) {
+	//TeSSLa needs a function to return or recieve values in order to monitor them
+	return 0;
 }
 
-void my_func_call(float arg0);
-void verify_data(char *filename) {
-	FILE *file = fopen(filename, "r");
-	char str[255];
-	while (fscanf(file, "%s", str) == 1) {
-		//Getting temperature value
-		char *temp_token = strtok(strtok(strstr(str, "temp"), ","), "temperature\":");
-		({float __int_arg_call0; my_func_call(__int_arg_call0 = atof(temp_token)); my_func(__int_arg_call0);});
+void my_func_call(float arg0, int arg1);
+void parse_data() {
+	//Read the file contents into a string 
+	FILE *file = fopen("response.json", "r"); 
+	char str[1024]; 
+	int len = fread(str, 1, sizeof(str), file); 
+	fclose(file); 
+
+	//Parse and access the JSON data 
+	cJSON *root = cJSON_Parse(str);
+	cJSON *turb_array = cJSON_GetObjectItem(root, "turbidity");
+	cJSON *iterator = NULL;
+	cJSON_ArrayForEach(iterator, turb_array) {
+		cJSON *temp = cJSON_GetObjectItem(iterator, "temperature");
+		cJSON *rec_num = cJSON_GetObjectItem(iterator, "record_number");
+		({float __int_arg_call0; int __int_arg_call1; my_func_call(__int_arg_call0 = temp->valuedouble, __int_arg_call1 = rec_num->valueint); my_func(__int_arg_call0, __int_arg_call1);});
 	}
-	fclose(file);
+
+	cJSON_Delete(root);
 }
 
 
 
 
-//:-----POST DATA-----
-//void post_data(char *filename) {
-
-	/*
-	TODO:
-	Somehow merge output.out with response.json into a csv file.
-	This way; the data can be posted back to the database. 
-	*/
-	
-	/*
-	CURL *curl;
-	struct curl_slist *list = NULL;
-	FILE *file;
-	curl = curl_easy_init();
-	if (curl) {
-		//Endpoint URL
-		curl_easy_setopt(curl, CURLOPT_URL, //Add post url here! Need to make one in hasura first);
-		
-		//Add headers
-		list = curl_slist_append(list, "Content-Type: application/json");
-		list = curl_slist_append(list, "x-hasura-admin-secret: mylongsecretkey");
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
-		
-		//Specify the POST data
-		//TODO: open file
-		while (//there is still data to parse) {
-			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, //data to post);
-		}
-		
-		//Perform post
-		curl_easy_perform(curl);
-		
-		curl_easy_cleanup(curl);
-		curl_global_cleanup();
-	}
-}
+//-----POST DATA-----
+/*
+TODO:
+Format "output.out" to a csv file, so that it can more easily be posted to the api.
 */
 
 
 
+
+//-----CONVERT DATA TO CSV
+/*
+TODO:
+Turn "output.out" data into a csv format so that others in can easily add it to the database on their machines. Will no longer be necessary once database is up and running on server.
+*/
+	
+
+
+
+//-----MAIN-----
 int main(void) {
-	char *filename = "response.json";
-	//get_data(filename);
-	verify_data(filename);
-	//post_data("output.out");
+	get_data();
+	parse_data();
 	return 0;
 }
 
