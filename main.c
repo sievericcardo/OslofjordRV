@@ -5,96 +5,81 @@
 #include <cjson/cJSON.h>
 
 
+struct string {
+        char *ptr;
+        size_t len;
+};
 
 
-//-----GET DATA-----
-size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
-	size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
-	return written;
-}
-
-void get_data() {
-	CURL *curl;
-	struct curl_slist *list = NULL;
-	FILE *file;
-	curl = curl_easy_init();
-	if (curl) {
-		//Endpoint URL
-		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/data");
-		
-		//Add headers
-		list = curl_slist_append(list, "Content-Type: application/json");
-		list = curl_slist_append(list, "x-hasura-admin-secret: mylongsecretkey");
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
-		
-		//Pass response to write function
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-		
-		//Write response to file
-		file = fopen("response.json", "wb");
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
-		curl_easy_perform(curl);
-		fclose(file);
-		
-		curl_easy_cleanup(curl);
-		curl_global_cleanup();
-	}
+void init_string(struct string *s) {
+        s->len = 0;
+        s->ptr = malloc(s->len+1);
+        if (s->ptr == NULL) {
+                fprintf(stderr, "malloc() failed\n");
+                exit(EXIT_FAILURE);
+        }
+        s->ptr[0] = '\0';
 }
 
 
+size_t write_func(void *ptr, size_t size, size_t nmemb, struct string *s) {
+	//Response from curl is passed to this function, which writes response to a string
+        size_t new_len = s->len + size*nmemb;
+        s->ptr = realloc(s->ptr, new_len+1);
+        if (s->ptr == NULL) {
+                fprintf(stderr, "realloc() failed\n");
+                exit(EXIT_FAILURE);
+        }
+        memcpy(s->ptr+s->len, ptr, size*nmemb);
+        s->ptr[new_len] = '\0';
+        s->len = new_len;
+        return size*nmemb;
+}
 
 
-//-----PARSE DATA-----
 int my_func(float temp, int rec_num) {
-	//TeSSLa needs a function to return or recieve values in order to monitor them
+	//Values must be passed to or returned from function to be monitored by TeSSLa
 	return 0;
 }
 
-void parse_data() {
-	//Read the file contents into a string 
-	FILE *file = fopen("response.json", "r"); 
-	char str[1024]; 
-	int len = fread(str, 1, sizeof(str), file); 
-	fclose(file); 
 
-	//Parse and access the JSON data 
-	cJSON *root = cJSON_Parse(str);
-	cJSON *turb_array = cJSON_GetObjectItem(root, "turbidity");
-	cJSON *iterator = NULL;
-	cJSON_ArrayForEach(iterator, turb_array) {
-		cJSON *temp = cJSON_GetObjectItem(iterator, "temperature");
-		cJSON *rec_num = cJSON_GetObjectItem(iterator, "record_number");
-		my_func(temp->valuedouble, rec_num->valueint);
-	}
+int main() {
+        CURL *curl;
+        struct curl_slist *list = NULL;
+        FILE *file;
+        curl = curl_easy_init();
+        if (curl) {
+                //Endpoint URL
+                curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/data");
 
-	cJSON_Delete(root);
-}
+                //Add headers
+                list = curl_slist_append(list, "Content-Type: application/json");
+                list = curl_slist_append(list, "x-hasura-admin-secret: mylongsecretkey");
+                curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
 
+                //Write response to string
+                struct string s;
+                init_string(&s);
+                curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
+                curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+                curl_easy_perform(curl);
+                
+                //printf("RESPONSE:\n%s\n", s.ptr);
 
-
-
-//-----POST DATA-----
-/*
-TODO:
-Use libcurl to post data in "output.out" to the database.
-*/
-
-
-
-
-//-----CONVERT DATA TO CSV
-/*
-TODO:
-Turn "output.out" data into a csv format so that others in can easily add it to the database on their machines.
-Will no longer be necessary once database is up and running on server.
-*/
-	
-
-
-
-//-----MAIN-----
-int main(void) {
-	get_data();
-	parse_data();
-	return 0;
+                //Parse and access the JSON response
+                cJSON *root = cJSON_Parse(s.ptr);
+                free(s.ptr);
+                cJSON *turb_array = cJSON_GetObjectItem(root, "turbidity");
+                cJSON *iterator = NULL;
+                cJSON_ArrayForEach(iterator, turb_array) {
+                        cJSON *temp = cJSON_GetObjectItem(iterator, "temperature");
+                        cJSON *rec_num = cJSON_GetObjectItem(iterator, "record_number");
+                        my_func(temp->valuedouble, rec_num->valueint);
+                }
+                
+                //Cleanup
+                cJSON_Delete(root);
+                curl_easy_cleanup(curl);
+        }
+        return 0;
 }
