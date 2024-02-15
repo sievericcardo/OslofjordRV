@@ -7,13 +7,12 @@
 
 
 //-----GET DATA-----
-
-static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
+size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
 	size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
 	return written;
 }
 
-static void get_data(char *filename) {
+void get_data(char *filename) {
 	CURL *curl;
 	struct curl_slist *list = NULL;
 	FILE *file;
@@ -45,31 +44,36 @@ static void get_data(char *filename) {
 
 
 //-----VERIFY DATA-----
-static void my_function(float temp, char *time) {
-	//Converts temperature value to float.
-	//Function necessary so that the TeSSLa specification has a return value to monitor.
+void my_func(float temp) {
+	//Function using values so TeSSLa monitor has something to monitor
 	printf("Temperature: %f\n", temp);
-	printf("Record time: %s\n\n", time);
 }
 
-void my_function_call(float arg0, char * arg1);
-static void verify_data(char *filename) {
+void my_func_call(float arg0);
+void verify_data(char *filename) {
 	FILE *file = fopen(filename, "r");
 	char str[255];
-	
 	while (fscanf(file, "%s", str) == 1) {
-		char *time_token = strtok(strstr(str, "202"), "\"");
+		//Getting temperature value
 		char *temp_token = strtok(strtok(strstr(str, "temp"), ","), "temperature\":");
-		({float __int_arg_call0; char * __int_arg_call1; my_function_call(__int_arg_call0 = atof(temp_token), __int_arg_call1 = time_token); my_function(__int_arg_call0, __int_arg_call1);});
+		({float __int_arg_call0; my_func_call(__int_arg_call0 = atof(temp_token)); my_func(__int_arg_call0);});
 	}
 	fclose(file);
 }
 
 
 
-/*
-//TODO:-----POST DATA-----
-static void post_data(char *filename) {
+
+//:-----POST DATA-----
+//void post_data(char *filename) {
+
+	/*
+	TODO:
+	Somehow merge output.out with response.json into a csv file.
+	This way; the data can be posted back to the database. 
+	*/
+	
+	/*
 	CURL *curl;
 	struct curl_slist *list = NULL;
 	FILE *file;
