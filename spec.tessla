@@ -1,4 +1,4 @@
-@InstFunctionReturn("ret_temperature")
+@InstFunctionCallArg("my_function", 0)
 in temperature: Events[Float]
 out temperature
 
@@ -10,3 +10,7 @@ out suitable_living_temp
 
 def preferred_spawning_temp = temperature <=. 6.0 && temperature >=. 0.0
 out preferred_spawning_temp
+
+@InstFunctionCallArg("my_function", 1)
+in record_time: Events[String]
+out record_time
