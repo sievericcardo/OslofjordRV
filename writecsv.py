@@ -11,26 +11,25 @@ with open("monitor-data.csv", "w") as csvfile:
 	row = [None, None, None, None, None]
 	i = 0
 	for line in lines:
-		i += 1
 		arr = line.split(" ")
 		name = arr[1]
 		value = arr[3].split("\n")[0]
 		
-		if value == "true":
-			value = "True"
-		elif value == "false":
-			value = "False"
-		
 		if name == header[0]:
 			row[0] = value
+			i += 1
 		elif name == header[1]:
 			row[1] = value
+			i += 1
 		elif name == header[2]:
 			row[2] = value
+			i += 1
 		elif name == header[3]:
 			row[3] = value
+			i += 1
 		elif name == header[4]:
 			row[4] = value
+			i += 1
 			
 		if i == 5:
 			writer.writerow(row)
