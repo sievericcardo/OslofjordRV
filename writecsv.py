@@ -5,7 +5,7 @@ header = ["record_number", "temperature", "suitable_living_temp_cod", "suitable_
 f = open("output.out", "r")
 lines = f.readlines()
 
-with open("data.csv", "w") as csvfile:
+with open("monitor-data.csv", "w") as csvfile:
 	writer = csv.writer(csvfile)
 	writer.writerow(header)
 	row = [None, None, None, None, None]
@@ -13,9 +13,9 @@ with open("data.csv", "w") as csvfile:
 	for line in lines:
 		i += 1
 		arr = line.split(" ")
-		
 		name = arr[1]
 		value = arr[3].split("\n")[0]
+		
 		if value == "true":
 			value = "True"
 		elif value == "false":
