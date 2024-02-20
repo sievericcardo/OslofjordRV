@@ -8,7 +8,7 @@ All necessary files are already generated in this repository. To run the monitor
 
 	java -jar tessla.jar interpreter spec.tessla trace.log > output.out
 
-### If you have made changes to the C-code, you need to do the following before running the monitor:
+If you have made changes to the C-code, you need to do the following before running the monitor:
 
 1. Instrument the C-code (req: GCC, Java):
 
