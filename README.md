@@ -18,12 +18,9 @@ All necessary files are already generated in this repository. To run the monitor
 
 		gcc main.c.instrumented.c -llogging -lcurl -lcjson -pthread -ldl -o main
 
-3. Execute the compiled program (executable):
+3. Execute the compiled program:
 
-		./main
+	- If there is new data added to the database, but no changes have been made to the C-code, you only need to execute the compiled program.
+	- Make sure you are connected to the Oslofjord Database, and that a REST Endpoint is set up for turbidity data. The code only requires temperature and record_number.
 
-### If new data is added to the database, but no changes have been made to the C-code, you need to do the following before running the monitor:
-
-Execute the compiled program (executable):
-
-	./main
+			./main
