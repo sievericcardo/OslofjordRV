@@ -16,7 +16,7 @@ All necessary files are already generated in this repository. To run the monitor
 
 2. Compile the instrumented C-code (req: TeSSLa logging library):
 
-		gcc main.c.instrumented.c -llogging -pthread -ldl -o main
+		gcc main.c.instrumented.c -llogging -lcurl -lcjson -pthread -ldl -o main
 
 3. Execute the compiled program (executable):
 
