@@ -51,7 +51,7 @@ int main() {
         curl = curl_easy_init();
         if (curl) {
                 //Endpoint URL
-                curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/data");
+                curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/turbidity");
 
                 //Add headers
                 list = curl_slist_append(list, "Content-Type: application/json");
