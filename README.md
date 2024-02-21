@@ -2,25 +2,38 @@
 
 Offline monitoring of data from the Oslofjord Database.
 
-## Running the monitor
+## Prerequisites to using this project
 
-All necessary files are already generated in this repository. To run the monitor on the current trace in this repository; clone this repository, make sure you have Java installed, and run the following command (req: Java):
+- Clone the repository.
+- Install the following libraries:
+    - libcurl
+    - cJSON
+    - GCC
+    - TeSSLa logging library
+- Install Java.
+- Get OslofjordDB up and running.
+- Set up a REST Endpoint for the "turbidity" table with a GET method.
+- Use the contents of "create-table.sql" to create an example table in Hasura.
+- Set up a REST Endpoint for the "example" table with POST method.
 
-	java -jar tessla.jar interpreter spec.tessla trace.log > output.out
+## All commands
 
-If you have made changes to the C-code, you need to do the following before running the monitor:
-
-1. Instrument the C-code (req: GCC, Java):
+1. Instrument the C-code (tell it to produce a trace for the TeSSLa specification):
 
 		java -jar tessla.jar instrumenter spec.tessla main.c /usr/lib/gcc/x86_64-linux-gnu/11/include/
 
-2. Compile the instrumented C-code (req: TeSSLa logging library):
+2. Compile the instrumented C-code:
 
-		gcc main.c.instrumented.c -llogging -lcurl -lcjson -pthread -ldl -o main
+		gcc main.c.instrumented.c -llogging -pthread -ldl -o main
 
-3. Execute the compiled program:
+3. Run the compiled code:
 
-	- If there is new data added to the database, but no changes have been made to the C-code, you only need to execute the compiled program.
-	- Make sure you are connected to the Oslofjord Database, and that a REST Endpoint is set up for turbidity data. The code only requires temperature and record_number.
+		./main
 
-			./main
+4. Run the TeSSLa interpreter:
+
+		java -jar tessla.jar interpreter spec.tessla trace.log > output.out
+        
+5. Post the monitor output data to the database:
+
+		gcc post_data.c -lcurl -o post_data && ./post_data
