@@ -13,8 +13,8 @@ Offline monitoring of data from the Oslofjord Database.
 - Install Java.
 - Get OslofjordDB up and running.
 - Set up a REST Endpoint for the "turbidity" table with a GET method.
-- Use the contents of "create-table.sql" to create an example table in Hasura.
-- Set up a REST Endpoint for the "example" table with POST method.
+- Set up an "example" table in Hasura (use contents of "create-table.sql").
+- Set up a REST Endpoint for the "example" table with a POST method.
 
 ## All commands
 
