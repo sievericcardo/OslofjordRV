@@ -13,8 +13,10 @@ Offline monitoring of data from the Oslofjord Database.
 - Install Java.
 - Get OslofjordDB up and running.
 - Set up a REST Endpoint for the "turbidity" table with a GET method.
-- Set up an "example" table in Hasura (see SQL at bottom of README).
+	- Only need to get "temperature" and "record_number".
+- Set up an "example" table in Hasura (see SQL below).
 - Set up a REST Endpoint for the "example" table with a POST method.
+- Set ut a REST Endpoint with a GET method, and manually write in query (see below).
 
 ## Execution
 
@@ -29,3 +31,17 @@ All necessary processes can be executed with `./script.sh`
 		preferred_spawning_temperature boolean,
 		PRIMARY KEY (record_number)
 	);
+
+## Query to get fish information
+
+	query fish_info($name: String!) {
+		fishFields(name: $name) {
+			maxSpawnTemp
+			maxTemp
+			minSpawnTemp
+			minTemp
+			name
+			prefMaxSpawnTemp
+			prefMinSpawnTemp
+		}
+	}
