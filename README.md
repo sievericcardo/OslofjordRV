@@ -18,7 +18,7 @@ Offline monitoring of data from the Oslofjord Database.
 
 ## Execution
 
-All necessary processes can be executed with `./script.sh`.
+All necessary processes can be executed with `./script.sh`
 
 ## Create table for runtime monitoring data
 
