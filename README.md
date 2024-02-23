@@ -16,7 +16,7 @@ Offline monitoring of data from the Oslofjord Database.
 	- Only need to get "temperature" and "record_number".
 - Set up an "example" table in Hasura (see SQL below).
 - Set up a REST Endpoint for the "example" table with a POST method.
-- Set ut a REST Endpoint with a GET method, and manually write in query (see below).
+- Set ut a REST Endpoint with a GET method, and manually write in query to get fish info (see below).
 
 ## Execution
 
