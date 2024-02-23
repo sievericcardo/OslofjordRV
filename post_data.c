@@ -4,6 +4,11 @@
 #include <curl/curl.h>
 
 
+size_t write_func(void *buffer, size_t size, size_t nmemb, void *userp) {
+	return size * nmemb;
+}
+
+
 int main() {
 	struct curl_slist *list = NULL;
 	CURL *curl;
@@ -43,6 +48,7 @@ int main() {
 				strcat(post, "}}");
 				
 				curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
+				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
 				curl_easy_perform(curl);
 				
 				strcpy(post, "{\"object\":{");
