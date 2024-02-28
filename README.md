@@ -24,6 +24,10 @@ All necessary processes can be executed with `./script.sh`
 
 ## Create table for runtime monitoring data
 
+Remember to track table!
+
+Current setup:
+
 	CREATE TABLE IF NOT EXISTS example (
 		record_number int NOT NULL UNIQUE,
 		suitable_temperature boolean,
@@ -31,6 +35,21 @@ All necessary processes can be executed with `./script.sh`
 		preferred_spawning_temperature boolean,
 		PRIMARY KEY (record_number)
 	);
+
+New setup with simulation data:
+
+	CREATE TABLE IF NOT EXISTS runtime_monitoring (
+		id_sim int NOT NULL UNIQUE,
+		suitable_temperature boolean,
+		suitable_spawning_temperature boolean,
+		preferred_spawning_temperature boolean,
+		PRIMARY KEY (id_sim)
+	);
+
+Needs 3 REST Endpoints:
+- POST
+- GET
+- DELETE
 
 ## Query to get fish information
 
