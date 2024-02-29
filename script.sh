@@ -4,7 +4,7 @@ python3 build_spec.py
 echo "Fetching simulation data and generating a trace..."
 ./main
 echo "Running the TeSSLa monitor on the trace..."
-java -jar tessla.jar interpreter spec.tessla trace.log > output.out && cat output.out
+java -jar tessla.jar interpreter spec.tessla trace.log > output.out
 echo "Posting the monitor output to the database..."
 gcc post_data.c -lcurl -o post_data && ./post_data
 echo "Done!"
