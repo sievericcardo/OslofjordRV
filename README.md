@@ -21,7 +21,7 @@ Offline monitoring of data from the Oslofjord Database.
 
 ## Execution
 
-All necessary processes are listed in, and can be executed with, `./script.sh`
+Use command `./script.sh` to run the entire process.
 
 ## Create table for runtime monitoring data
 
@@ -47,4 +47,10 @@ Remember to track table!
 			prefMaxSpawnTemp
 			prefMinSpawnTemp
 		}
-	}
+	}	
+
+## Instrument and compile C-code
+
+Only do if changes have been made to the C-code
+
+	java -jar tessla.jar instrumenter spec.tessla main.c /usr/lib/gcc/x86_64-linux-gnu/11/include/ && gcc main.c.instrumented.c -llogging -lcurl -lcjson -pthread -ldl -o main
