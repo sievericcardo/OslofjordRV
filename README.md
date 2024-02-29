@@ -11,6 +11,7 @@ Offline monitoring of data from the Oslofjord Database.
     - GCC
     - TeSSLa logging library
 - Install Java.
+- Install Python.
 - Get OslofjordDB up and running.
 - Run the `post_sim_data.py` file.
 - Set up a REST Endpoint for the "simulations" table with a GET method.
