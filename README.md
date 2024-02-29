@@ -12,31 +12,20 @@ Offline monitoring of data from the Oslofjord Database.
     - TeSSLa logging library
 - Install Java.
 - Get OslofjordDB up and running.
-- Set up a REST Endpoint for the "turbidity" table with a GET method.
-	- Only need to get "temperature" and "record_number".
-- Set up an "example" table in Hasura (see SQL below).
-- Set up a REST Endpoint for the "example" table with a POST method.
+- Run the `post_sim_data.py` file.
+- Set up a REST Endpoint for the "simulations" table with a GET method.
+    - Only need to get "temperature" and "id_sim".
+- Set up a "runtime_monitoring" table (see SQL below).
+- Set up a REST Endpoint for the "runtime_monitoring" table with a POST method.
 - Set ut a REST Endpoint with a GET method, and manually write in query to get fish info (see below).
 
 ## Execution
 
-All necessary processes can be executed with `./script.sh`
+All necessary processes are listed in, and can be executed with, `./script.sh`
 
 ## Create table for runtime monitoring data
 
 Remember to track table!
-
-Current setup:
-
-	CREATE TABLE IF NOT EXISTS example (
-		record_number int NOT NULL UNIQUE,
-		suitable_temperature boolean,
-		suitable_spawning_temperature boolean,
-		preferred_spawning_temperature boolean,
-		PRIMARY KEY (record_number)
-	);
-
-New setup with simulation data:
 
 	CREATE TABLE IF NOT EXISTS runtime_monitoring (
 		id_sim int NOT NULL UNIQUE,
@@ -45,11 +34,6 @@ New setup with simulation data:
 		preferred_spawning_temperature boolean,
 		PRIMARY KEY (id_sim)
 	);
-
-Needs 3 REST Endpoints:
-- POST
-- GET
-- DELETE
 
 ## Query to get fish information
 

@@ -43,6 +43,7 @@ int my_func(float temp, int id_sim) {
 }
 
 
+void my_func_call(float arg0, int arg1);
 int main() {
         CURL *curl;
         struct curl_slist *list = NULL;
@@ -77,7 +78,7 @@ int main() {
                         if (temp - (int)temp == 0) {
                         	temp += 0.000001;
                         }
-			my_func(temp, id_sim);
+			({float __int_arg_call0; int __int_arg_call1; my_func_call(__int_arg_call0 = temp, __int_arg_call1 = id_sim); my_func(__int_arg_call0, __int_arg_call1);});
                 }
                 
                 //Cleanup
@@ -86,3 +87,5 @@ int main() {
         }
         return 0;
 }
+
+#include "main.c.callbacks.h"

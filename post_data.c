@@ -15,7 +15,7 @@ int main() {
 	curl = curl_easy_init();
 	if (curl) {
 		//Endpoint URL
-		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/example");
+		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/runtime_monitoring");
 
 		//Add headers
 		list = curl_slist_append(list, "Content-Type: application/json");
@@ -44,9 +44,9 @@ int main() {
 				}
 				token = strtok(NULL, " ");
 			}
-			if (i == 5) {
+			if (i == 4) {
 				strcat(post, "}}");
-				
+
 				curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
 				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
 				curl_easy_perform(curl);
