@@ -77,8 +77,6 @@ int main() {
 					curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
 					curl_easy_perform(curl);
 					
-					//printf("%s\n\n", post);
-					
 					strcpy(post, "{\"object\":{");
 				} else {
 					strcat(post, ",");
@@ -93,12 +91,9 @@ int main() {
 		}
 		//Need to do one last post to include last item
 		strcat(post, "}}");
-		
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
 		curl_easy_perform(curl);
-		
-		//printf("%s\n\n", post);
 	
 		// Cleanup
 		fclose(fp);
