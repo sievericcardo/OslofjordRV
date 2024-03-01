@@ -10,18 +10,39 @@ size_t write_func(void *buffer, size_t size, size_t nmemb, void *userp) {
 
 
 int main() {
+	//Specify headers
 	struct curl_slist *list = NULL;
+	list = curl_slist_append(list, "Content-Type: application/json");
+	list = curl_slist_append(list, "x-hasura-admin-secret: mylongsecretkey");
+	
 	CURL *curl;
+	
+	//FIRST: Delete all items already in table
 	curl = curl_easy_init();
 	if (curl) {
-		//Endpoint URL
-		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/runtime_monitoring");
-
 		//Add headers
-		list = curl_slist_append(list, "Content-Type: application/json");
-		list = curl_slist_append(list, "x-hasura-admin-secret: mylongsecretkey");
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
-
+		
+		//Specify custom request and url
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/runtime_monitoring/delete");
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
+		curl_easy_perform(curl);
+		
+		//Cleanup
+		curl_easy_cleanup(curl);
+	}
+	
+	//SECOND: Post new monitor output to table
+	curl = curl_easy_init();
+	if (curl) {
+		//Add headers
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
+		
+		//Specify url
+		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/runtime_monitoring");
+		
+		//Open and read contents of "output.out" (monitor output), then build the post string
 		FILE *fp = fopen("output.out", "r");
 		int len = 255;
 		char str[len];
@@ -47,6 +68,7 @@ int main() {
 			if (i == 4) {
 				strcat(post, "}}");
 
+				//Perform post
 				curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
 				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
 				curl_easy_perform(curl);
