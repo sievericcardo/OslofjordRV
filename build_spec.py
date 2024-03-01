@@ -3,7 +3,7 @@ import requests
 
 
 #What fish/species we want information about
-fish = "Porbeagle"
+fish = "Atlantic Cod"
 
 
 #Request API REST Endpoint for info about fish
@@ -65,6 +65,13 @@ if items["prefMaxSpawnTemp"] != None and items["prefMinSpawnTemp"] != None:
 	f.write(f"out preferred_spawning_temperature\n\n")
 
 
+#If the species doesn't have any of the values we want to check in the knowledge graph
+if counter == 0:
+	f.close()
+	f = open("spec.tessla", "w")
+	f.write("")
+
+
 #Close out file
 f.write(f"@InstFunctionCallArg(\"my_func\", 1)\n")
 f.write(f"in id_sim: Events[Int]\n")
@@ -72,8 +79,12 @@ f.write(f"out id_sim\n")
 f.close()
 
 
-#If the species doesn't have any of the values we want to check in the knowledge graph
-if counter == 0:
-	f = open("spec.tessla", "w")
-	f.write("")
-	f.close()
+
+
+
+
+
+
+
+
+
