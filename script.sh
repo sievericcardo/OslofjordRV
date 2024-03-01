@@ -1,8 +1,6 @@
 #!/bin/bash
 echo "Fetching data from knowledgegraph and building TeSSLa specification..."
 python3 build_spec.py
-echo "Instrumenting and compiling C-code..."
-java -jar tessla.jar instrumenter spec.tessla main.c /usr/lib/gcc/x86_64-linux-gnu/11/include/ && gcc main.c.instrumented.c -llogging -lcurl -lcjson -pthread -ldl -o main
 echo "Fetching simulation data and generating a trace..."
 ./main
 echo "Running the TeSSLa monitor on the trace..."
