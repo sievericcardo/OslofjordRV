@@ -69,7 +69,6 @@ if items["prefMaxSpawnTemp"] != None and items["prefMinSpawnTemp"] != None:
 if counter == 0:
 	f.close()
 	f = open("spec.tessla", "w")
-	f.write("")
 
 
 #Close out file
