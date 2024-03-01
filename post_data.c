@@ -16,8 +16,8 @@ int main() {
 	list = curl_slist_append(list, "x-hasura-admin-secret: mylongsecretkey");
 	
 	CURL *curl;
-	
-	//FIRST: Delete all items already in table
+
+	//Delete all items already in table
 	curl = curl_easy_init();
 	if (curl) {
 		//Add headers
@@ -32,8 +32,8 @@ int main() {
 		//Cleanup
 		curl_easy_cleanup(curl);
 	}
-	
-	//SECOND: Post new monitor output to table
+
+	//Post new monitor output to table
 	curl = curl_easy_init();
 	if (curl) {
 		//Add headers
@@ -42,43 +42,63 @@ int main() {
 		//Specify url
 		curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8080/api/rest/runtime_monitoring");
 		
-		//Open and read contents of "output.out" (monitor output), then build the post string
+		//Use monitor output to build postfields to give to database
 		FILE *fp = fopen("output.out", "r");
+		char first_name[100];
+		char post[1024] = "{\"object\":{";
 		int len = 255;
 		char str[len];
-		char post[1024] = "{\"object\":{";
 		int i = 0;
 		while (fgets(str, len, fp)) {
-			i++;
-			str[strcspn(str, "\n")] = 0; //Removes newline char
+			//Remove newline char
+			str[strcspn(str, "\n")] = 0;
+	
+			//Isolate variable name and value
+			char *name = strtok(str, ": ");
+			name = strtok(NULL, " =");
+			char *value = strtok(NULL, "= ");
 			
-			char *token = strtok(str, " ");
-			int j = 0;
-			while (token != NULL) {
-				j++;
-				if (j == 2) {
-					strcat(post, "\"");
-					strcat(post, token);
-					strcat(post, "\":");
-				} else if (j == 4) {
-					strcat(post, token);
-				}
-				token = strtok(NULL, " ");
-			}
-			if (i == 4) {
-				strcat(post, "}}");
-
-				//Perform post
-				curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
-				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
-				curl_easy_perform(curl);
+			if (i == 0) {
+				i++;
+				strcpy(first_name, name);
 				
-				strcpy(post, "{\"object\":{");
-				i = 0;	
+				//Add to postfields
+				strcat(post, "\"");
+				strcat(post, name);
+				strcat(post, "\":");
+				strcat(post, value);
 			} else {
-				strcat(post, ",");
+				//If we're done with one row; post and start over
+				if (strcmp(name, first_name) == 0) {
+					strcat(post, "}}");
+					
+					//Perform post
+					curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
+					curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
+					curl_easy_perform(curl);
+					
+					//printf("%s\n\n", post);
+					
+					strcpy(post, "{\"object\":{");
+				} else {
+					strcat(post, ",");
+				}
+				
+				//Add to postfields
+				strcat(post, "\"");
+				strcat(post, name);
+				strcat(post, "\":");
+				strcat(post, value);
 			}
 		}
+		//Need to do one last post to include last item
+		strcat(post, "}}");
+		
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
+		curl_easy_perform(curl);
+		
+		//printf("%s\n\n", post);
 	
 		// Cleanup
 		fclose(fp);
