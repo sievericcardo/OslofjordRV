@@ -17,7 +17,7 @@ Offline monitoring of data from the Oslofjord Database.
 - Set up a REST Endpoint for the "simulations" table with a GET method.
     - Only need to get "temperature" and "id_sim".
 - Set up a "runtime_monitoring" table (see SQL below).
-- Set up a REST Endpoint for the "runtime_monitoring" table with a POST method.
+- Set up two REST Endpoint for the "runtime_monitoring" table; a POST method and a DELETE method.
 - Set ut a REST Endpoint with a GET method, and manually write in query to get fish info (see below).
 
 ## Execution
