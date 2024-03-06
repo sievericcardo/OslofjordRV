@@ -6,23 +6,17 @@ Offline monitoring of data from the Oslofjord Database.
 
 - Clone the repository.
 - Install the following libraries:
-    - libcurl
     - cJSON
     - GCC
     - TeSSLa logging library
+    - GQL
 - Install Java.
 - Install Python.
-- Get OslofjordDB up and running.
-- Run the `post_sim_data.py` file.
-- Set up a REST Endpoint for the "simulations" table with a GET method.
-    - Only need to get "temperature" and "id_sim".
-- Set up a "runtime_monitoring" table (see SQL below).
-- Set up two REST Endpoint for the "runtime_monitoring" table; a POST method and a DELETE method.
-- Set ut a REST Endpoint with a GET method, and manually write in query to get fish info (see below).
+- Connect to the OslofjordDB (either via docker or nrec).
 
 ## Execution
 
-Use command `sh script.sh "<species name>"` to run the entire process. Name is case sensitive. For example: `sh script.sh "Atlantic Cod"`
+Use command `sh script.sh <grid_id> "<species name>"` to run the entire process. Name is case sensitive. For example: `sh script.sh 234 "Atlantic Cod"`
 
 ## Create table for runtime monitoring data
 
@@ -37,20 +31,6 @@ Remember to track table!
 		grid_id int,
 		PRIMARY KEY (id_sim)
 	);
-
-## Query to get fish information
-
-	query fish_info($name: String!) {
-		fishFields(name: $name) {
-			maxSpawnTemp
-			maxTemp
-			minSpawnTemp
-			minTemp
-			name
-			prefMaxSpawnTemp
-			prefMinSpawnTemp
-		}
-	}	
 
 ## Instrument and compile C-code
 
