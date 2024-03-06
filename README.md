@@ -33,6 +33,8 @@ Remember to track table!
 		suitable_temperature boolean,
 		suitable_spawning_temperature boolean,
 		preferred_spawning_temperature boolean,
+		species_name TEXT,
+		grid_id int,
 		PRIMARY KEY (id_sim)
 	);
 
