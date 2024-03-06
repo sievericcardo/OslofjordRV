@@ -1,30 +1,34 @@
-import json
-import requests
 import sys
+from gql import gql, Client
+from gql.transport.aiohttp import AIOHTTPTransport
 
+transport = AIOHTTPTransport(
+        url="http://localhost:8080/v1/graphql",
+        headers={"Content-Type":"application/json","x-hasura-admin-secret":"mylongsecretkey"}
+)
 
+client = Client(transport=transport, fetch_schema_from_transport=True)
 
+query = gql(
+    f'''
+    query fish_info {{
+        fishFields(name: "{sys.argv[1]}") {{
+            prefMinSpawnTemp
+            prefMaxSpawnTemp
+            name
+            minTemp
+            minSpawnTemp
+            maxTemp
+            maxSpawnTemp
+        }}
+    }}
+    '''
+)
 
-
-#What fish/species we want information about
-fish = sys.argv[1]
-
-
-#Request API REST Endpoint for info about fish
-url = "http://localhost:8080/api/rest/fish-info"
-headers = {
-	"Content-Type":"application/json",
-	"x-hasura-admin-secret":"mylongsecretkey"
-}
-r = requests.get(url, headers=headers, params={"name":fish})
-
-
-#Load json response string into a python dict
-my_dict = json.loads(r.text)
-
+result = client.execute(query)
 
 #Isolate the values we are interested in, and format them
-items = my_dict["fishFields"][0]
+items = result["fishFields"][0]
 for x in items:
 	if isinstance(items[x], int):
 		items[x] = float(items[x])
@@ -80,14 +84,3 @@ f.write(f"@InstFunctionCallArg(\"my_func\", 1)\n")
 f.write(f"in id_sim: Events[Int]\n")
 f.write(f"out id_sim\n")
 f.close()
-
-
-
-
-
-
-
-
-
-
-
