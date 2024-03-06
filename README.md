@@ -22,7 +22,7 @@ Offline monitoring of data from the Oslofjord Database.
 
 ## Execution
 
-Use command `./script.sh` to run the entire process.
+Use command `sh script.sh "<species name>"` to run the entire process. Name is case sensitive. For example: `sh script.sh "Atlantic Cod"`
 
 ## Create table for runtime monitoring data
 
@@ -52,6 +52,4 @@ Remember to track table!
 
 ## Instrument and compile C-code
 
-Only do if changes have been made to the C-code
-
-	java -jar tessla.jar instrumenter spec.tessla main.c /usr/lib/gcc/x86_64-linux-gnu/11/include/ && gcc main.c.instrumented.c -llogging -lcurl -lcjson -pthread -ldl -o main
+`sh compile.sh`. Only do if changes have been made to the main.c file.

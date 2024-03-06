@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Fetching data from knowledgegraph and building TeSSLa specification..."
-python3 build_spec.py
+python3 build_spec.py "$1"
 echo "Fetching simulation data and generating a trace..."
 ./main
 echo "Running the TeSSLa monitor on the trace..."

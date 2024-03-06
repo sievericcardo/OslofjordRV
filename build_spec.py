@@ -1,9 +1,13 @@
 import json
 import requests
+import sys
+
+
+
 
 
 #What fish/species we want information about
-fish = "Atlantic Cod"
+fish = sys.argv[1]
 
 
 #Request API REST Endpoint for info about fish
