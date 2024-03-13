@@ -23,6 +23,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         parsed_post_data = urllib.parse.parse_qs(post_data)
         data_dict = {key: value[0] for key, value in parsed_post_data.items()}
         print(data_dict)
+	# TODO: USE THE DATA TO START THE RUNTIME VERIFICATION PROCESS (script.sh)
 
 # Create an HTTP server with the custom request handler
 def run(server_class=HTTPServer, handler_class=MyRequestHandler, port=8000):
