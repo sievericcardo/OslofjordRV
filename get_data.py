@@ -1,26 +1,54 @@
+import sys
 import json
-import requests
+from gql import gql, Client
+from gql.transport.aiohttp import AIOHTTPTransport
 
 
-#What fish/species we want information about
-fish = "Atlantic Cod"
+#Set up GQL with url and headers
+transport = AIOHTTPTransport(
+    url="http://localhost:8080/v1/graphql",
+    headers={"Content-Type":"application/json","x-hasura-admin-secret":"mylongsecretkey"}
+)
+client = Client(transport=transport, fetch_schema_from_transport=True)
 
 
-#Request API REST Endpoint for info about fish
-url = "http://localhost:8080/api/rest/fish-info"
-headers = {
-	"Content-Type":"application/json",
-	"x-hasura-admin-secret":"mylongsecretkey"
-}
-r = requests.get(url, headers=headers, params={"name":fish})
+#Query the simulation table for the data we want to monitor
+sim_query = gql(f'''
+	query myQuery {{
+		simulations(where: {{grid_id: {{_eq: {sys.argv[1]} }} }}) {{
+			id_sim
+			temperature
+		}}
+	}}
+''')
+sim_response = client.execute(sim_query)
 
 
-#Load json response string into a python dict
-my_dict = json.loads(r.text)
+#Write response to file
+f = open("sim_response.json", "w")
+json.dump(sim_response, f);
+f.close()
 
 
-#Isolate the values we are interested in, and format them
-items = my_dict["fishFields"][0]
+#Query the knowledgegraph for values about the species we want to check
+species_query = gql(f'''
+    query myQuery {{
+        fishFields(name: "{sys.argv[2]}") {{
+            prefMinSpawnTemp
+            prefMaxSpawnTemp
+            name
+            minTemp
+            minSpawnTemp
+            maxTemp
+            maxSpawnTemp
+        }}
+    }}
+''')
+species_response = client.execute(species_query)
+
+
+#Isolate the values we are interested in, and format them according to TeSSLa syntax
+items = species_response["fishFields"][0]
 for x in items:
 	if isinstance(items[x], int):
 		items[x] = float(items[x])
@@ -28,12 +56,10 @@ for x in items:
 			s = str(items[x]).split("-")[1]
 			items[x] = f"-.{float(s)}"
 
-
 #Write the TeSSLa specification
 f = open("spec.tessla", "w")
 f.write("@InstFunctionCallArg(\"my_func\", 0)\n")
 f.write("in temperature: Events[Float]\n\n")
-
 
 counter = 0
 
@@ -76,14 +102,3 @@ f.write(f"@InstFunctionCallArg(\"my_func\", 1)\n")
 f.write(f"in id_sim: Events[Int]\n")
 f.write(f"out id_sim\n")
 f.close()
-
-
-
-
-
-
-
-
-
-
-
