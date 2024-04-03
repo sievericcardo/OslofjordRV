@@ -14,9 +14,9 @@ def new_request():
     data = request.get_json()
     grid_id = data['event']['data']['new']['grid_id']
     species_name = data['event']['data']['new']['species_name']
-    #print(f"grid_id = {grid_id} +++ species_name = {species_name}")
+    request_id = data['event']['data']['new']['request_id']
 
-    os.system(f'sh script.sh {grid_id} "{species_name}"')
+    os.system(f'sh script.sh {grid_id} "{species_name}" {request_id}')
 
     return jsonify({'message': 'Request received!'})
 
