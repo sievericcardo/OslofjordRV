@@ -48,3 +48,8 @@ for line in lines:
 		mutation += f'preferred_spawning_temperature: {value}, '
 	
 	count += 1
+
+
+
+mutation = f'mutation MyMutation {{update_requests_by_pk(pk_columns: {{request_id: {sys.argv[3]} }}, _set: {{done: true}}) {{done}} }}'
+req_response = client.execute(gql(mutation))
