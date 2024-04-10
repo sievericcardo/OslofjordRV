@@ -12,12 +12,10 @@ transport = AIOHTTPTransport(
 client = Client(transport=transport, fetch_schema_from_transport=True)
 
 
-
+#Read monitoring output to a string
 f = open("output.out", "r")
 lines = f.readlines()
 f.close()
-
-first_key = lines[0].split(" ")[1]
 
 count = 0
 
@@ -26,14 +24,11 @@ start_mutation = f'mutation MyMutation {{insert_runtime_monitoring(objects: {{re
 mutation = start_mutation
 
 for line in lines:
+	count += 1
+	
 	arr = line.split(" ")
 	key = arr[1]
 	value = arr[3].replace("\n", "")
-	
-	if first_key == key and count != 0:
-		mutation += '}) {affected_rows}}'
-		rv_response = client.execute(gql(mutation))
-		mutation = start_mutation
 
 	if key == "id_sim":
 		mutation += f'id_sim: {value}, '
@@ -46,10 +41,15 @@ for line in lines:
 		
 	elif key == "preferred_spawning_temperature":
 		mutation += f'preferred_spawning_temperature: {value}, '
-	
-	count += 1
+
+	if count == 4:
+		mutation += '}) {affected_rows}}'
+		rv_response = client.execute(gql(mutation))
+		mutation = start_mutation
+		count == 0
 
 
 
+#Update 'done' variable in request table when done
 mutation = f'mutation MyMutation {{update_requests_by_pk(pk_columns: {{request_id: {sys.argv[1]} }}, _set: {{done: true}}) {{done}} }}'
 req_response = client.execute(gql(mutation))
