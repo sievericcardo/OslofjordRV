@@ -3,5 +3,5 @@ echo "Running TeSSLa..."
 python3 get_data.py $1 "$2"
 ./main
 java -jar tessla.jar interpreter spec.tessla trace.log > output.out
-python3 post_data.py $1 "$2" $3
+python3 post_data.py $3
 echo "Done!"

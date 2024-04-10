@@ -21,7 +21,7 @@ first_key = lines[0].split(" ")[1]
 
 count = 0
 
-start_mutation = f'mutation MyMutation {{insert_runtime_monitoring(objects: {{grid_id: {sys.argv[1]}, species_name: "{sys.argv[2]}", request_id: {sys.argv[3]}, '
+start_mutation = f'mutation MyMutation {{insert_runtime_monitoring(objects: {{request_id: {sys.argv[1]}, '
 
 mutation = start_mutation
 
@@ -51,5 +51,5 @@ for line in lines:
 
 
 
-mutation = f'mutation MyMutation {{update_requests_by_pk(pk_columns: {{request_id: {sys.argv[3]} }}, _set: {{done: true}}) {{done}} }}'
+mutation = f'mutation MyMutation {{update_requests_by_pk(pk_columns: {{request_id: {sys.argv[1]} }}, _set: {{done: true}}) {{done}} }}'
 req_response = client.execute(gql(mutation))
