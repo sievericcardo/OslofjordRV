@@ -12,42 +12,41 @@ transport = AIOHTTPTransport(
 client = Client(transport=transport, fetch_schema_from_transport=True)
 
 
-#Read monitoring output to a string
+#Read monitor output to a string
 f = open("output.out", "r")
 lines = f.readlines()
 f.close()
 
 count = 0
-
 start_mutation = f'mutation MyMutation {{insert_runtime_monitoring(objects: {{request_id: {sys.argv[1]}, '
-
 mutation = start_mutation
 
+
+#Go through monitor output, build mutation, and post to database
 for line in lines:
-	count += 1
-	
-	arr = line.split(" ")
-	key = arr[1]
-	value = arr[3].replace("\n", "")
+    count += 1
 
-	if key == "id_sim":
-		mutation += f'id_sim: {value}, '
-		
-	elif key == "suitable_temperature":
-		mutation += f'suitable_temperature: {value}, '
-		
-	elif key == "suitable_spawning_temperature":
-		mutation += f'suitable_spawning_temperature: {value}, '
-		
-	elif key == "preferred_spawning_temperature":
-		mutation += f'preferred_spawning_temperature: {value}, '
+    arr = line.split(" ")
+    key = arr[1]
+    value = arr[3].replace("\n", "")
 
-	if count == 4:
-		mutation += '}) {affected_rows}}'
-		rv_response = client.execute(gql(mutation))
-		mutation = start_mutation
-		count == 0
+    if key == "id_sim":
+        mutation += f'id_sim: {value}, '
 
+    elif key == "suitable_temperature":
+        mutation += f'suitable_temperature: {value}, '
+
+    elif key == "suitable_spawning_temperature":
+        mutation += f'suitable_spawning_temperature: {value}, '
+
+    elif key == "preferred_spawning_temperature":
+        mutation += f'preferred_spawning_temperature: {value}, '
+
+    if count == 4:
+        mutation += '}) {affected_rows}}'
+        rv_response = client.execute(gql(mutation))
+        mutation = start_mutation
+        count = 0
 
 
 #Update 'done' variable in request table when done
