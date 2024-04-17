@@ -6,7 +6,7 @@ from gql.transport.aiohttp import AIOHTTPTransport
 
 #Set up GQL with url and headers.
 transport = AIOHTTPTransport(
-        url="http://172.17.0.1:8080/v1/graphql",
+        url="http://localhost:8080/v1/graphql",
     headers={"Content-Type":"application/json","x-hasura-admin-secret":"mylongsecretkey"}
 )
 client = Client(transport=transport, fetch_schema_from_transport=True)
@@ -22,43 +22,31 @@ mutation = start_mutation
 
 
 #The length of the monitor output determines how many lines a "row" spans. The output length depends on the info available about the species.
-count = 0
-limit = 0
-if len(lines) == 24:
-    limit = 1
-elif len(lines) == 24*2:
-    limit = 2
-elif len(lines) == 24*3:
-    limit = 3
-elif len(lines) == 24*4:
-    limit = 4
+suitable_temp = 'null'
+suitable_spawn_temp = 'null'
+preferred_spawn_temp = 'null'
 
 
 #Go through monitor output, build mutation, and post to database.
 for line in lines:
-    count += 1
-
     arr = line.split(" ")
     key = arr[1]
     value = arr[3].replace("\n", "")
 
     if key == "id_sim":
-        mutation += f'id_sim: {value}, '
-
-    elif key == "suitable_temperature":
-        mutation += f'suitable_temperature: {value}, '
-
-    elif key == "suitable_spawning_temperature":
-        mutation += f'suitable_spawning_temperature: {value}, '
-
-    elif key == "preferred_spawning_temperature":
-        mutation += f'preferred_spawning_temperature: {value}, '
-
-    if count == limit:
+        mutation += f'id_sim: {value}, suitable_temperature: {suitable_temp}, suitable_spawning_temperature: {suitable_spawn_temp}, preferred_spawning_temperature: {preferred_spawn_temp}'
         mutation += '}) {affected_rows}}'
         rv_response = client.execute(gql(mutation))
         mutation = start_mutation
-        count = 0
+
+    elif key == "suitable_temperature":
+        suitable_temp = value
+
+    elif key == "suitable_spawning_temperature":
+        suitabble_spawn_temp = value
+
+    elif key == "preferred_spawning_temperature":
+        preferred_spawn_temp = value
 
 
 #Update 'done' variable in request table when done.
