@@ -1,0 +1,7 @@
+version: "2"
+authtoken: <your-authtoken>
+tunnels:
+  requests:
+    proto: http
+    addr: 5000
+    domain: <your-static-domain.app>
