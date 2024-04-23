@@ -25,19 +25,25 @@ mutation = start_mutation
 suitable_temp = 'null'
 suitable_spawn_temp = 'null'
 preferred_spawn_temp = 'null'
+id_sim = None
 
 
 #Go through monitor output, build mutation, and post to database.
+count = 0
+i = 1
 for line in lines:
     arr = line.split(" ")
     key = arr[1]
     value = arr[3].replace("\n", "")
 
     if key == "id_sim":
-        mutation += f'id_sim: {value}, suitable_temperature: {suitable_temp}, suitable_spawning_temperature: {suitable_spawn_temp}, preferred_spawning_temperature: {preferred_spawn_temp}'
-        mutation += '}) {affected_rows}}'
-        rv_response = client.execute(gql(mutation))
-        mutation = start_mutation
+        if count != 0:
+            mutation += f'id_sim: {id_sim}, suitable_temperature: {suitable_temp}, suitable_spawning_temperature: {suitable_spawn_temp}, preferred_spawning_temperature: {preferred_spawn_temp}'
+            mutation += '}) {affected_rows}}'
+            rv_response = client.execute(gql(mutation))
+            mutation = start_mutation
+        id_sim = value
+        count += 1
 
     elif key == "suitable_temperature":
         suitable_temp = value
@@ -47,6 +53,12 @@ for line in lines:
 
     elif key == "preferred_spawning_temperature":
         preferred_spawn_temp = value
+
+
+#Post the last entry.
+mutation += f'id_sim: {id_sim}, suitable_temperature: {suitable_temp}, suitable_spawning_temperature: {suitable_spawn_temp}, preferred_spawning_temperature: {preferred_spawn_temp}'
+mutation += '}) {affected_rows}}'
+rv_response = client.execute(gql(mutation))
 
 
 #Update 'done' variable in request table when done.
