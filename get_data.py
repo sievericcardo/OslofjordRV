@@ -6,7 +6,7 @@ from gql.transport.aiohttp import AIOHTTPTransport
 
 #Set up GQL with url and headers
 transport = AIOHTTPTransport(
-        url="http://localhost:8080/v1/graphql",
+    url="http://172.17.0.1:8080/v1/graphql",
     headers={"Content-Type":"application/json","x-hasura-admin-secret":"mylongsecretkey"}
 )
 client = Client(transport=transport, fetch_schema_from_transport=True)
