@@ -24,9 +24,18 @@ sim_query = gql(f'''
 sim_response = client.execute(sim_query)
 
 
-#Write response to file
-f = open("sim_response.json", "w")
-json.dump(sim_response, f);
+#Parse response to a trace and write to file
+f = open("trace.log", "w")
+i = 1
+for x in sim_response["simulations"]:
+    f.write(f'{i}: id_sim = {x["id_sim"]}\n')
+
+    temp = x["temperature"]
+    if temp == "NaN":
+        f.write(f'{i}: temperature = 100.0\n')
+    else:
+        f.write(f'{i}: temperature = {temp}\n')
+    i += 1
 f.close()
 
 
@@ -56,39 +65,47 @@ for x in items:
 			s = str(items[x]).split("-")[1]
 			items[x] = f"-.{float(s)}"
 
+
 #Write the TeSSLa specification
 f = open("spec.tessla", "w")
-f.write("@InstFunctionCallArg(\"my_func\", 0)\n")
 f.write("in temperature: Events[Float]\n\n")
-
 counter = 0
 
 
 #Check if suitable temperature
 if items["maxTemp"] != None and items["minTemp"] != None:
-	counter += 1
-	maxTemp = items["maxTemp"]
-	minTemp = items["minTemp"]
-	f.write(f"def suitable_temperature = temperature <=. {maxTemp} && temperature >=. {minTemp}\n")
-	f.write(f"out suitable_temperature\n\n")
+    counter += 1
+    maxTemp = items["maxTemp"]
+    minTemp = items["minTemp"]
+    f.write("def suitable_temperature =\n")
+    f.write("\tif temperature >=. 100.0\n")
+    f.write("\tthen false\n")
+    f.write(f"\telse temperature <=. {maxTemp} && temperature >=. {minTemp}\n")
+    f.write("out suitable_temperature\n\n")
 
 
 #Check if suitable spawning temperature
 if items["maxSpawnTemp"] != None and items["minSpawnTemp"] != None:
-	counter += 1
-	maxSpawnTemp = items["maxSpawnTemp"]
-	minSpawnTemp = items["minSpawnTemp"]
-	f.write(f"def suitable_spawning_temperature = temperature <=. {maxSpawnTemp} && temperature >=. {minSpawnTemp}\n")
-	f.write(f"out suitable_spawning_temperature\n\n")
+    counter += 1
+    maxSpawnTemp = items["maxSpawnTemp"]
+    minSpawnTemp = items["minSpawnTemp"]
+    f.write("def suitable_spawning_temperature =\n")
+    f.write("\tif temperature >=. 100.0\n")
+    f.write("\tthen false\n")
+    f.write(f"\telse temperature <=. {maxSpawnTemp} && temperature >=. {minSpawnTemp}\n")
+    f.write("out suitable_spawning_temperature\n\n")
 
 
 #Check if preferred spawning temperature
 if items["prefMaxSpawnTemp"] != None and items["prefMinSpawnTemp"] != None:
-	counter += 1
-	prefMaxSpawnTemp = items["prefMaxSpawnTemp"]
-	prefMinSpawnTemp = items["prefMinSpawnTemp"]
-	f.write(f"def preferred_spawning_temperature = temperature <=. {float(prefMaxSpawnTemp)} && temperature >=. {float(prefMinSpawnTemp)}\n")
-	f.write(f"out preferred_spawning_temperature\n\n")
+    counter += 1
+    prefMaxSpawnTemp = items["prefMaxSpawnTemp"]
+    prefMinSpawnTemp = items["prefMinSpawnTemp"]
+    f.write(f"def preferred_spawning_temperature =\n")
+    f.write("\tif temperature >=. 100.0\n")
+    f.write("\tthen false\n")
+    f.write(f"\telse temperature <=. {prefMaxSpawnTemp} && temperature >=. {prefMinSpawnTemp}\n")
+    f.write("out preferred_spawning_temperature\n\n")
 
 
 #If the species doesn't have any of the values we want to check in the knowledge graph
@@ -98,7 +115,6 @@ if counter == 0:
 
 
 #Close out file
-f.write(f"@InstFunctionCallArg(\"my_func\", 1)\n")
-f.write(f"in id_sim: Events[Int]\n")
-f.write(f"out id_sim\n")
+f.write("in id_sim: Events[Int]\n")
+f.write("out id_sim\n")
 f.close()
