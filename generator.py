@@ -59,7 +59,7 @@ class Generator:
 
         return graphQlData
     
-    def generateCode(self):
+    def generateGetData(self):
         code_string = """
 import sys
 import json
@@ -88,13 +88,13 @@ sim_response = client.execute(sim_query)
 f = open("trace.log", "w")
 i = 1
 for x in sim_response["simulations"]:
-    f.write(f'{i}: id_sim = {x["id_sim"]}\n')
+    f.write(f'{i}: id_sim = {x["id_sim"]}\\n')
 
     temp = x["temperature"]
     if temp == "NaN":
-        f.write(f'{i}: temperature = 100.0\n')
+        f.write(f'{i}: temperature = 100.0\\n')
     else:
-        f.write(f'{i}: temperature = {temp}\n')
+        f.write(f'{i}: temperature = {temp\\n')
     i += 1
 f.close()
 
@@ -127,7 +127,7 @@ for x in items:
 
 #Write the TeSSLa specification
 f = open("spec.tessla", "w")
-f.write("in temperature: Events[Float]\n\n")
+f.write("in temperature: Events[Float]\\n\\n")
 counter = 0
 """
 
@@ -143,7 +143,7 @@ counter = 0
                 code_string += " " * 4 + "f.write(f\"\\tif" + str(data[1]) + " " + str(data[2]) + ". " + str(data[3]) + "\\n\")\n"
                 code_string += " " * 4 + "f.write(f\"\\tthen false\\n\")\n"
                 code_string += " " * 4 + "f.write(f\"\\telse " + str(data[1]) + " " + str(data[4]) + ".  {" + str(info[0]) + "} && " + str(data[1]) + " " + str(data[2]) + ".  {" + str(info[1]) + "}\\n\")\n"
-                code_string += " " * 4 + "f.write(\"out " + str(data[0])  + "\\n\\n\")\n"
+                code_string += " " * 4 + "f.write(\"out " + str(data[0])  + "\\n\\n\")\n\n"
             else:
                 code_string += "if items[\"" + str(info) + "\"] != None:\n"
                 code_string += " " * 4 + "counter += 1\n"
@@ -152,7 +152,7 @@ counter = 0
                 code_string += " " * 4 + "f.write(f\"\\tif" + str(data[1]) + " " + str(data[2]) + ". " + str(data[3]) + "\\n\")\n"
                 code_string += " " * 4 + "f.write(f\"\\tthen false\\n\")\n"
                 code_string += " " * 4 + "f.write(f\"\\telse " + str(data[1]) + " " + str(data[4]) + ".  {" + str(info) + "}\\n\")\n"
-                code_string += " " * 4 + "f.write(\"out " + str(data[0])  + "\\n\\n\")\n"
+                code_string += " " * 4 + "f.write(\"out " + str(data[0])  + "\\n\\n\")\n\n"
 
         code_string += """
 #If the species doesn't have any of the values we want to check in the knowledge graph
@@ -162,14 +162,79 @@ if counter == 0:
 
 
 #Close out file
-f.write("in id_sim: Events[Int]\n")
-f.write("out id_sim\n")
+f.write("in id_sim: Events[Int]\\n")
+f.write("out id_sim\\n")
 f.close()
 """
-        return code_string     
+        return code_string
+    
+    def generatePostData(self):
+        code_string = """
+import sys
+import json
+from gql import gql, Client
+from gql.transport.aiohttp import AIOHTTPTransport
+
+
+#Set up GQL with url and headers.
+transport = AIOHTTPTransport(
+    url="http://172.17.0.1:8080/v1/graphql",
+    headers={"Content-Type":"application/json","x-hasura-admin-secret":"mylongsecretkey"}
+)
+client = Client(transport=transport, fetch_schema_from_transport=True)
+
+
+#Read monitor output to a string.
+f = open("output.out", "r")
+lines = f.readlines()
+f.close()
+
+start_mutation = f'mutation MyMutation {{insert_runtime_monitoring(objects: {{request_id: {sys.argv[1]}, '
+mutation = start_mutation
+
+#The length of the monitor output determines how many lines a "row" spans. The output length depends on the info available about the species.
+suitable_temp = "false"
+suitable_spawn_temp = "false"
+preferred_spawn_temp = "false"
+id_sim = None
+
+
+#Go through monitor output, build mutation, and post to database.
+count = 0
+for line in lines:
+    arr = line.split(" ")
+    key = arr[1]
+    value = arr[3].replace("\\n", "")
+
+    if key == "id_sim":
+        if count != 0:
+            mutation += '}) {affected_rows}}'
+            rv_response = client.execute(gql(mutation))
+            mutation = start_mutation
+        mutation += f'id_sim: {value}, '
+"""
+        for _, data in self.species_info:
+            code_string += " " * 4 + "elif key == \"" + data[0] + "\":\n"
+            code_string += " " * 8 + "mutation += f'" + data[0] + ": {value}, '\n"
+
+        code_string += """
+    count += 1
+
+
+mutation += '}) {affected_rows}}'
+rv_response = client.execute(gql(mutation))
+
+
+#Update 'done' variable in request table when done.
+mutation = f'mutation MyMutation {{update_requests_by_pk(pk_columns: {{request_id: {sys.argv[1]} }}, _set: {{done: true}}) {{done}} }}'
+req_response = client.execute(gql(mutation))
+"""
+
+        return code_string
 
 if __name__ == "__main__":
     # Example usage
     g = Generator("fishFields", "FishFields", [("maxSpawningTemperature", "Int"), ("minSpawningTemperature", "Int"), ("maxTemperature", "Int"), ("minTemperature", "Int"), ("preferredMaxSpawningTemperature", "Int"), ("preferredMinSpawningTemperature", "Int")], {("maxTemp", "minTemp"): ["suitable_temperature", "temperature", ">=", "100.0", "<="], ("maxSpawnTemp", "minSpawnTemp"): ["suitable_spawning_temperature", "temperature", ">=", "100.0", "<="], ("prefMaxSpawnTemp", "prefMinSpawnTemp"): ["preferred_spawning_temperature", "temperature", ">=", "100.0", "<="]})
     print(g.generateQuery())
-    print(g.generateCode())
+    print(g.generateGetData())
+    print(g.generatePostData())
