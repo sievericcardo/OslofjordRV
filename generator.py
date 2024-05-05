@@ -131,8 +131,10 @@ f.write("in temperature: Events[Float]\\n\\n")
 counter = 0
 """
 
-        for info, data in self.species_info:
-            print(info, data)
+        for info in self.species_info:
+            print(info)
+            print(self.species_info[info])
+            data = self.species_info[info]
             # Check if info is a tuple or a single value
             if isinstance(info, tuple):
                 code_string += "if items[\"" + str(info[0]) + "\"] != None and items[\"" + str(info[1]) + "\"] != None:\n"
