@@ -132,8 +132,6 @@ counter = 0
 """
 
         for info in self.species_info:
-            print(info)
-            print(self.species_info[info])
             data = self.species_info[info]
             # Check if info is a tuple or a single value
             if isinstance(info, tuple):
