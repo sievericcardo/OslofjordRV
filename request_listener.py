@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import os
+from data_processor import DataProcessor
 
 app = Flask(__name__)
 
@@ -16,7 +17,16 @@ def new_request():
     species_name = data['event']['data']['new']['species_name']
     request_id = data['event']['data']['new']['request_id']
 
-    os.system(f'sh script.sh {grid_id} "{species_name}" {request_id}')
+    dp = DataProcessor()
+
+    print('Getting data...')
+    dp.get_data(grid_id, species_name)
+    print('Running TeSSLa interpreter...')
+    os.system('java -jar tessla.jar interpreter spec.tessla trace.log > output.out')
+    print('Posting data...')
+    dp.post_data(request_id)
+
+    # os.system(f'sh script.sh {grid_id} "{species_name}" {request_id}')
 
     return jsonify({'message': 'Request received!'})
 
