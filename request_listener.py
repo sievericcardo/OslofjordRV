@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import os
 from data_processor import DataProcessor
+from generator import Generator
 
 app = Flask(__name__)
 
@@ -17,7 +18,21 @@ def new_request():
     species_name = data['event']['data']['new']['species_name']
     request_id = data['event']['data']['new']['request_id']
 
-    dp = DataProcessor()
+    name = data['event']['data']['new']['name']
+    field = data['event']['data']['new']['field']
+    base_property = data['event']['data']['new']['base_property']
+    parameters = data['event']['data']['new']['parameters']
+    species_info = data['event']['data']['new']['species_info']
+    offset = data['event']['data']['new']['offset']
+
+    gen = Generator(name, field, base_property, parameters, species_info)
+    graph_query = gen.generateQuery()
+
+    # Save the query into the Oslofjord-DB-API container
+    with open(f'/app/{name}.graphql', 'w') as f:
+        f.write(graph_query)
+
+    dp = DataProcessor(name, field, base_property, parameters, species_info, offset)
 
     print('Getting data...')
     dp.get_data(grid_id, species_name)
