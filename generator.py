@@ -1,3 +1,8 @@
+import os
+
+# The url must be taken from the API_HOST of docker if present, localhost if not.
+base_url = 'http://' + os.getenv('API_HOST', 'localhost')
+
 class Generator:
     def __init__(self, name, field, parameters, species_info):
         """
@@ -21,7 +26,7 @@ class Generator:
     def generateQuery(self):
         graphQlData = "\"\"\"\n\n" + \
             "--- endpoint ---\n" + \
-            "http://172.17.0.1:3030/ds/query\n\n" + \
+            base_url + ":3030/ds/query\n\n" + \
             "--- sparql ---\n" + \
             "PREFIX ast: <http://www.smolang.org/oslofjordDT#>\n" + \
             "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" + \
