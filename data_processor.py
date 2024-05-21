@@ -4,27 +4,31 @@ from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport
 
 class DataProcessor:
-    def __init__(self, name, type, parameters, species_info):
+    def __init__(self, name, type, base_property, parameters, species_info, offset):
         """"
         Constructor for the DataProcessor class
         
         Parameters:
         name (str): The name of the query
         field (str): The field of the query
+        base_property(str): The base information of the property
         parameters (list): A list of tuples containing the parameter name 
             and the corresponding type type
         species_info (list): A dictionary containing the species information
             to be checked in the knowledge graph. The first element can be a
             tuple containing the two extremities of a range, or a single value.
             The second element is a list containing the TeSSLa specification
+        offset (str): The offset to be added to the base_property value
         """
         self.name = name
         self.type = type
+        self.base_property = base_property
         self.parameters = parameters
         self.species_info = species_info
+        self.offset = offset
         #Set up GQL with url and headers
         self.transport = AIOHTTPTransport(
-            url="http://172.17.0.1:8080/v1/graphql",
+            url="http://127.0.0.1:8080/v1/graphql",
             headers={"Content-Type":"application/json","x-hasura-admin-secret":"mylongsecretkey"}
         )
         self.client = Client(transport=self.transport, fetch_schema_from_transport=True)
@@ -42,43 +46,81 @@ class DataProcessor:
         sim_response = self.client.execute(sim_query)
 
         #Parse response to a trace and write to file
-        f = open("trace.log", "w")
+        f = open("proto.trace.log", "w")
         i = 1
         for x in sim_response["simulations"]:
             f.write(f'{i}: id_sim = {x["id_sim"]}\n')
 
-            temp = x["temperature"]
+            temp = x[self.base_property]
             if temp == "NaN":
-                f.write(f'{i}: temperature = 100.0\n')
+                f.write(f'{i}: {self.base_property} = 100.0\n')
             else:
-                f.write(f'{i}: temperature = {temp}\n')
+                f.write(f'{i}: {self.base_property} = {temp}\n')
             i += 1
         f.close()
 
         query = "query myQuery {{\n" + \
-                " " * 8 +self.name + "(name: \"{sys.argv[2]}\") {{\n"
+                " " * 8 +self.name + "(name: \"" + sys.argv[2] + "\") {{\n"
         for parameter, _ in self.parameters:
             query += " " * 12 + parameter + "\n"
         query += " " * 8 + "}}\n"
         query += " " * 4 + "}}"
 
+        print(query)
+
+        new_species_query = gql(f'''
+            query myQuery {{
+                fishFields(name: "{sys.argv[2]}") {{
+                    prefMinSpawnTemp
+                    prefMaxSpawnTemp
+                    name
+                    minTemp
+                    minSpawnTemp
+                    maxTemp
+                    maxSpawnTemp
+                }}
+            }}
+        ''')
+
+        print(new_species_query)
+
         #Query the knowledgegraph for values about the species we want to check
+        # species_query = gql(query)
+
+        indentation = ' ' * 20
+        parameters = '\n'.join([indentation + parameter for parameter, _ in self.parameters])
+        query = f"""
+        query myQuery {{
+            {self.name}(name: "{sys.argv[2]}") {{
+                {parameters}
+            }}
+        }}
+        """
         species_query = gql(query)
 
-        species_response = self.client.execute(species_query)
+        # species_response = self.client.execute(species_query)
 
-        #Isolate the values we are interested in, and format them according to TeSSLa syntax
-        items = species_response[self.name][0]
-        for x in items:
-            if isinstance(items[x], int):
-                items[x] = float(items[x])
-                if items[x] < 0:
-                    s = str(items[x]).split("-")[1]
-                    items[x] = f"-.{float(s)}"
+        # #Isolate the values we are interested in, and format them according to TeSSLa syntax
+        # items = species_response[self.name][0]
+        # for x in items:
+        #     if isinstance(items[x], int):
+        #         items[x] = float(items[x])
+        #         if items[x] < 0:
+        #             s = str(items[x]).split("-")[1]
+        #             items[x] = f"-.{float(s)}"
+
+        items = {
+            "maxTemp": 100.0,
+            "minTemp": 100.0,
+            "maxSpawnTemp": 100.0,
+            "minSpawnTemp": 100.0,
+            "prefMaxSpawnTemp": 100.0,
+            "prefMinSpawnTemp": 100.0}
 
         #Write the TeSSLa specification
-        f = open("spec.tessla", "w")
-        f.write("in temperature: Events[Float]\n\n")
+        f = open("proto.spec.tessla", "w")
+        f.write("in " + self.base_property + ": Events[Float]\n\n")
+        f.write(f'def offset = {self.offset}\n\n')
         counter = 0
 
         # Iterate over the species info
@@ -93,7 +135,7 @@ class DataProcessor:
                     f.write(f"def {data[0]}=\n")
                     f.write(f"\tif {data[1]} {data[2]}. {data[3]}\n")
                     f.write(f"\tthen false\n")
-                    f.write(f"\telse {data[1]} {data[4]}. {val1} && {data[1]} {data[2]}. {val2}\n")
+                    f.write(f"\telse ({data[1]} +. offset) {data[4]}. {val1} && ({data[1]} +. offset) {data[2]}. {val2}\n")
                     f.write("out " + data[0] + "\n\n")
             else:
                 if items[str(info)] is not None:
@@ -102,13 +144,13 @@ class DataProcessor:
                     f.write(f"def {data[0]}=\n")
                     f.write(f"\tif {data[1]} {data[2]}. {data[3]}\n")
                     f.write(f"\tthen false\n")
-                    f.write(f"\telse {data[1]} {data[4]}. {val}\n")
+                    f.write(f"\telse ({data[1]} +. offset) {data[4]}. {val}\n")
                     f.write("out " + data[0] + "\n\n")
 
         #If the species doesn't have any of the values we want to check in the knowledge graph
         if counter == 0:
             f.close()
-            f = open("spec.tessla", "w")
+            f = open("proto.spec.tessla", "w")
 
         #Close out file
         f.write("in id_sim: Events[Int]\n")
@@ -126,10 +168,10 @@ class DataProcessor:
 
 
         #The length of the monitor output determines how many lines a "row" spans. The output length depends on the info available about the species.
-        suitable_temp = "false"
-        suitable_spawn_temp = "false"
-        preferred_spawn_temp = "false"
-        id_sim = None
+        # suitable_temp = "false"
+        # suitable_spawn_temp = "false"
+        # preferred_spawn_temp = "false"
+        # id_sim = None
 
         #Go through monitor output, build mutation, and post to database.
         count = 0
@@ -164,3 +206,8 @@ class DataProcessor:
         #Update 'done' variable in request table when done.
         mutation = f'mutation MyMutation {{update_requests_by_pk(pk_columns: {{request_id: {sys.argv[1]} }}, _set: {{done: true}}) {{done}} }}'
         req_response = self.client.execute(gql(mutation))
+
+if __name__ == "__main__":
+    d = DataProcessor("fishFields", "FishFields", "temperature", [("maxSpawnTemp", "Int"), ("minSpawnTemp", "Int"), ("maxTemp", "Int"), ("minTemp", "Int"), ("prefMaxSpawnTemp", "Int"), ("prefMinSpawnTemp", "Int")], {("maxTemp", "minTemp"): ["suitable_temperature", "temperature", ">=", "100.0", "<="], ("maxSpawnTemp", "minSpawnTemp"): ["suitable_spawning_temperature", "temperature", ">=", "100.0", "<="], ("prefMaxSpawnTemp", "prefMinSpawnTemp"): ["preferred_spawning_temperature", "temperature", ">=", "100.0", "<="]}, "10")
+    d.get_data()
+    # d.post_data()
