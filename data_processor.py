@@ -132,7 +132,7 @@ class DataProcessor:
                     counter += 1
                     val1 = items[str(info[0])]
                     val2 = items[str(info[1])]
-                    f.write(f"def {data[0]}=\n")
+                    f.write(f"def {data[0]} =\n")
                     f.write(f"\tif {data[1]} {data[2]}. {data[3]}\n")
                     f.write(f"\tthen false\n")
                     f.write(f"\telse ({data[1]} +. offset) {data[4]}. {val1} && ({data[1]} +. offset) {data[2]}. {val2}\n")
