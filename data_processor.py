@@ -2,6 +2,10 @@ import sys
 import json
 from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport
+import os
+
+# The url must be taken from the API_HOST of docker if present, localhost if not.
+base_url = 'http://' + os.getenv('API_HOST', 'localhost')
 
 class DataProcessor:
     def __init__(self, name, type, base_property, parameters, species_info, offset):
@@ -28,16 +32,16 @@ class DataProcessor:
         self.offset = offset
         #Set up GQL with url and headers
         self.transport = AIOHTTPTransport(
-            url="http://127.0.0.1:8080/v1/graphql",
+            url=base_url + ":8080/v1/graphql",
             headers={"Content-Type":"application/json","x-hasura-admin-secret":"mylongsecretkey"}
         )
         self.client = Client(transport=self.transport, fetch_schema_from_transport=True)
 
-    def get_data(self):
+    def get_data(self, grid_id, species_name):
         #Query the simulation table for the data we want to monitor
         sim_query = gql(f'''
             query myQuery {{
-                simulations(where: {{grid_id: {{_eq: {sys.argv[1]} }} }}) {{
+                simulations(where: {{grid_id: {{_eq: {grid_id} }} }}) {{
                     id_sim
                     temperature
                 }}
@@ -60,7 +64,7 @@ class DataProcessor:
         f.close()
 
         query = "query myQuery {{\n" + \
-                " " * 8 +self.name + "(name: \"" + sys.argv[2] + "\") {{\n"
+                " " * 8 +self.name + "(name: \"" + species_name + "\") {{\n"
         for parameter, _ in self.parameters:
             query += " " * 12 + parameter + "\n"
         query += " " * 8 + "}}\n"
@@ -70,7 +74,7 @@ class DataProcessor:
 
         new_species_query = gql(f'''
             query myQuery {{
-                fishFields(name: "{sys.argv[2]}") {{
+                fishFields(name: "{species_name}") {{
                     prefMinSpawnTemp
                     prefMaxSpawnTemp
                     name
@@ -91,31 +95,31 @@ class DataProcessor:
         parameters = '\n'.join([indentation + parameter for parameter, _ in self.parameters])
         query = f"""
         query myQuery {{
-            {self.name}(name: "{sys.argv[2]}") {{
+            {self.name}(name: "{species_name}") {{
                 {parameters}
             }}
         }}
         """
         species_query = gql(query)
 
-        # species_response = self.client.execute(species_query)
+        species_response = self.client.execute(species_query)
 
         # #Isolate the values we are interested in, and format them according to TeSSLa syntax
-        # items = species_response[self.name][0]
-        # for x in items:
-        #     if isinstance(items[x], int):
-        #         items[x] = float(items[x])
-        #         if items[x] < 0:
-        #             s = str(items[x]).split("-")[1]
-        #             items[x] = f"-.{float(s)}"
+        items = species_response[self.name][0]
+        for x in items:
+            if isinstance(items[x], int):
+                items[x] = float(items[x])
+                if items[x] < 0:
+                    s = str(items[x]).split("-")[1]
+                    items[x] = f"-.{float(s)}"
 
-        items = {
-            "maxTemp": 100.0,
-            "minTemp": 100.0,
-            "maxSpawnTemp": 100.0,
-            "minSpawnTemp": 100.0,
-            "prefMaxSpawnTemp": 100.0,
-            "prefMinSpawnTemp": 100.0}
+        # items = {
+        #     "maxTemp": 100.0,
+        #     "minTemp": 100.0,
+        #     "maxSpawnTemp": 100.0,
+        #     "minSpawnTemp": 100.0,
+        #     "prefMaxSpawnTemp": 100.0,
+        #     "prefMinSpawnTemp": 100.0}
 
         #Write the TeSSLa specification
         f = open("proto.spec.tessla", "w")
@@ -157,13 +161,13 @@ class DataProcessor:
         f.write("out id_sim\n")
         f.close()
 
-    def post_data(self):
+    def post_data(self, request_id):
         #Read monitor output to a string.
         f = open("output.out", "r")
         lines = f.readlines()
         f.close()
 
-        start_mutation = f'mutation MyMutation {{insert_runtime_monitoring(objects: {{request_id: {sys.argv[1]}, '
+        start_mutation = f'mutation MyMutation {{insert_runtime_monitoring(objects: {{request_id: {request_id}, '
         mutation = start_mutation
 
 
@@ -209,5 +213,5 @@ class DataProcessor:
 
 if __name__ == "__main__":
     d = DataProcessor("fishFields", "FishFields", "temperature", [("maxSpawnTemp", "Int"), ("minSpawnTemp", "Int"), ("maxTemp", "Int"), ("minTemp", "Int"), ("prefMaxSpawnTemp", "Int"), ("prefMinSpawnTemp", "Int")], {("maxTemp", "minTemp"): ["suitable_temperature", "temperature", ">=", "100.0", "<="], ("maxSpawnTemp", "minSpawnTemp"): ["suitable_spawning_temperature", "temperature", ">=", "100.0", "<="], ("prefMaxSpawnTemp", "prefMinSpawnTemp"): ["preferred_spawning_temperature", "temperature", ">=", "100.0", "<="]}, "10")
-    d.get_data()
-    # d.post_data()
+    d.get_data("1", "Cod")
+    # d.post_data("2")
