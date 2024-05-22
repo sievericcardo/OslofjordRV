@@ -1,6 +1,11 @@
 FROM ubuntu:latest
+# Set the working directory
 WORKDIR /monitor
+
+# Copy the current directory contents into the container at /monitor
 COPY . /monitor
+
+# Install needed packages
 RUN apt-get update && \
 apt-get install -y libcjson-dev unzip default-jre python3 pipx python3-venv wget
 RUN pipx install gql[all] requests flask
