@@ -2,11 +2,14 @@ import sys
 import json
 from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport
+import os
 
+hasura_host = os.getenv("HASURA_HOST", "localhost")
+hasura_url = f"http://{hasura_host}:8080/v1/graphql"
 
 #Set up GQL with url and headers.
 transport = AIOHTTPTransport(
-    url="http://172.17.0.1:8080/v1/graphql",
+    url=hasura_url,
     headers={"Content-Type":"application/json","x-hasura-admin-secret":"mylongsecretkey"}
 )
 client = Client(transport=transport, fetch_schema_from_transport=True)
