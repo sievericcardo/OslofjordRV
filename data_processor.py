@@ -2,10 +2,6 @@ import sys
 import json
 from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport
-import os
-
-# The url must be taken from the API_HOST of docker if present, localhost if not.
-base_url = 'http://' + os.getenv('API_HOST', 'localhost')
 
 class DataProcessor:
     def __init__(self, name, type, base_property, parameters, species_info, offset):
@@ -32,7 +28,7 @@ class DataProcessor:
         self.offset = offset
         #Set up GQL with url and headers
         self.transport = AIOHTTPTransport(
-            url=base_url + ":8080/v1/graphql",
+            url="http://localhost:8080/v1/graphql",
             headers={"Content-Type":"application/json","x-hasura-admin-secret":"mylongsecretkey"}
         )
         self.client = Client(transport=self.transport, fetch_schema_from_transport=True)
