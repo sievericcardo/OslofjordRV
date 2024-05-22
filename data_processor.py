@@ -3,6 +3,11 @@ import json
 from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport
 
+import os
+
+hasura_host = os.getenv("HASURA_HOST", "localhost")
+hasura_url = f"http://{hasura_host}:8080/v1/graphql"
+
 class DataProcessor:
     def __init__(self, name, type, base_property, parameters, species_info, offset):
         """"
@@ -28,7 +33,7 @@ class DataProcessor:
         self.offset = offset
         #Set up GQL with url and headers
         self.transport = AIOHTTPTransport(
-            url="http://localhost:8080/v1/graphql",
+            url=hasura_url,
             headers={"Content-Type":"application/json","x-hasura-admin-secret":"mylongsecretkey"}
         )
         self.client = Client(transport=self.transport, fetch_schema_from_transport=True)
