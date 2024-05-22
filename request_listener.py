@@ -14,6 +14,7 @@ def new_request():
 
     # Isolate grid_id and species_name
     data = request.get_json()
+    print(data)
     grid_id = data['event']['data']['new']['grid_id']
     species_name = data['event']['data']['new']['species_name']
     request_id = data['event']['data']['new']['request_id']
@@ -46,4 +47,4 @@ def new_request():
     return jsonify({'message': 'Request received!'})
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(port=5001)
