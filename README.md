@@ -8,7 +8,7 @@ The monitoring process is dockerized through the Dockerfile and compose.yaml in 
 
 2. Navigate to your ngrok dashboard, and create a free static domain.
 
-3. Navigate to `OslofjordDB-API/db/scripts/create-event-listener.py` and insert your ngrok static domain for the webhook (keep the `/new-request` at the end).
+3. Navigate to `OslofjordDB-API/db/scripts/create-event-trigger.py` and insert your ngrok static domain for the webhook (keep the `/new-request` at the end).
 
 4. Insert your ngrok authtoken and static domain into the `ngrok.yml` file in this repo.
 
