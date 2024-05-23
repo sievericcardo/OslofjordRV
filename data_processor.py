@@ -51,7 +51,7 @@ class DataProcessor:
         sim_response = self.client.execute(sim_query)
 
         #Parse response to a trace and write to file
-        f = open("proto.trace.log", "w")
+        f = open("trace.log", "w")
         i = 1
         for x in sim_response["simulations"]:
             f.write(f'{i}: id_sim = {x["id_sim"]}\n')
@@ -123,7 +123,7 @@ class DataProcessor:
         #     "prefMinSpawnTemp": 100.0}
 
         #Write the TeSSLa specification
-        f = open("proto.spec.tessla", "w")
+        f = open("spec.tessla", "w")
         f.write("in " + self.base_property + ": Events[Float]\n\n")
         f.write(f'def offset = {self.offset}\n\n')
         counter = 0
@@ -138,7 +138,7 @@ class DataProcessor:
                     val1 = items[str(info[0])]
                     val2 = items[str(info[1])]
                     f.write(f"def {data[0]} =\n")
-                    f.write(f"\tif {data[1]} {data[2]}. {data[3]}\n")
+                    f.write(f"\tif ({data[1]} +. offset) {data[2]}. {data[3]}\n")
                     f.write(f"\tthen false\n")
                     f.write(f"\telse ({data[1]} +. offset) {data[4]}. {val1} && ({data[1]} +. offset) {data[2]}. {val2}\n")
                     f.write("out " + data[0] + "\n\n")
@@ -147,7 +147,7 @@ class DataProcessor:
                     counter += 1
                     val = items[str(info)]
                     f.write(f"def {data[0]}=\n")
-                    f.write(f"\tif {data[1]} {data[2]}. {data[3]}\n")
+                    f.write(f"\tif ({data[1]} +. offset) {data[2]}. {data[3]}\n")
                     f.write(f"\tthen false\n")
                     f.write(f"\telse ({data[1]} +. offset) {data[4]}. {val}\n")
                     f.write("out " + data[0] + "\n\n")
