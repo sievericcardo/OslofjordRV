@@ -10,7 +10,7 @@ RUN apt-get update && \
 apt-get install -y libcjson-dev unzip default-jre python3 pipx python3-venv wget python3-pip
 RUN pipx install gql[all]
 RUN wget https://www.tessla.io/logging.zip && unzip logging.zip && rm logging.zip && mv liblogging.a /usr/lib && mv logging.h /usr/include
-RUN pip install requests flask --break-system-packages
+RUN pip install requests flask gql[all] --break-system-packages
 
 # Execute the command
 CMD python3 request_listener.py
