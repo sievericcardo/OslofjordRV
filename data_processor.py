@@ -209,7 +209,7 @@ class DataProcessor:
 
 
         #Update 'done' variable in request table when done.
-        mutation = f'mutation MyMutation {{update_requests_by_pk(pk_columns: {{request_id: {sys.argv[1]} }}, _set: {{done: true}}) {{done}} }}'
+        mutation = f'mutation MyMutation {{update_requests_by_pk(pk_columns: {{request_id: {request_id} }}, _set: {{done: true}}) {{done}} }}'
         req_response = self.client.execute(gql(mutation))
 
 if __name__ == "__main__":
