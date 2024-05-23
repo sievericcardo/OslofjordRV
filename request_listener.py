@@ -28,7 +28,7 @@ def new_request():
     species_info = data['event']['data']['new']['species_info']
     offset = data['event']['data']['new']['offset']
 
-    gen = Generator(name, field, base_property, parameters, species_info)
+    gen = Generator(name, field, parameters, species_info)
     graph_query = gen.generateQuery()
 
     # Save the query into the Oslofjord-DB-API container
