@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
+from flask_socketio import SocketIO
 import os
 from data_processor import DataProcessor
 from generator import Generator
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 
 @app.route('/new-request', methods=['POST'])
 def new_request():
@@ -47,4 +49,5 @@ def new_request():
     return jsonify({'message': 'Request received!'})
 
 if __name__ == '__main__':
-    app.run(port=5001)
+    port = int(os.environ.get('MONITORING_PORT', 5002))
+    socketio.run(app, host='0.0.0.0', port=port)
