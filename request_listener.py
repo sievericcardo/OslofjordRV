@@ -53,9 +53,9 @@ def new_request():
     graph_query = gen.generateQuery()
 
     # Save the query into the Oslofjord-DB-API container
-    with open(f'/app/{name}.graphql', 'w') as f:
+    # with open(f'/app/{name}.graphql', 'w') as f:
         # f.write(graph_query)
-        print("Query generated...")
+        # print("Query generated...")
 
     dp = DataProcessor(name, field, base_property, parameters, species_info, offset)
 
