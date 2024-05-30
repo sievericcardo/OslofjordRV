@@ -44,7 +44,7 @@ class DataProcessor:
             query myQuery {{
                 simulations(where: {{grid_id: {{_eq: {grid_id} }} }}) {{
                     id_sim
-                    temperature
+                    {self.base_property}
                 }}
             }}
         ''')
@@ -89,9 +89,6 @@ class DataProcessor:
 
         print(new_species_query)
 
-        #Query the knowledgegraph for values about the species we want to check
-        # species_query = gql(query)
-
         indentation = ' ' * 20
         parameters = '\n'.join([indentation + parameter for parameter, _ in self.parameters])
         query = f"""
@@ -113,14 +110,6 @@ class DataProcessor:
                 if items[x] < 0:
                     s = str(items[x]).split("-")[1]
                     items[x] = f"-.{float(s)}"
-
-        # items = {
-        #     "maxTemp": 100.0,
-        #     "minTemp": 100.0,
-        #     "maxSpawnTemp": 100.0,
-        #     "minSpawnTemp": 100.0,
-        #     "prefMaxSpawnTemp": 100.0,
-        #     "prefMinSpawnTemp": 100.0}
 
         #Write the TeSSLa specification
         f = open("spec.tessla", "w")
@@ -155,7 +144,7 @@ class DataProcessor:
         #If the species doesn't have any of the values we want to check in the knowledge graph
         if counter == 0:
             f.close()
-            f = open("proto.spec.tessla", "w")
+            f = open("spec.tessla", "w")
 
         #Close out file
         f.write("in id_sim: Events[Int]\n")
@@ -214,5 +203,5 @@ class DataProcessor:
 
 if __name__ == "__main__":
     d = DataProcessor("fishFields", "FishFields", "temperature", [("maxSpawnTemp", "Int"), ("minSpawnTemp", "Int"), ("maxTemp", "Int"), ("minTemp", "Int"), ("prefMaxSpawnTemp", "Int"), ("prefMinSpawnTemp", "Int")], {("maxTemp", "minTemp"): ["suitable_temperature", "temperature", ">=", "100.0", "<="], ("maxSpawnTemp", "minSpawnTemp"): ["suitable_spawning_temperature", "temperature", ">=", "100.0", "<="], ("prefMaxSpawnTemp", "prefMinSpawnTemp"): ["preferred_spawning_temperature", "temperature", ">=", "100.0", "<="]}, "10")
-    d.get_data("1", "Cod")
-    # d.post_data("2")
+    d.get_data("238", "Cod")
+    d.post_data("5")
