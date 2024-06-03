@@ -13,19 +13,20 @@ data_parameters = {
     "field": "FishFields",
     "base_property": "temperature",
     "parameters": [
-        ("maxSpawnTemp", "Int"),
-        ("minSpawnTemp", "Int"),
-        ("maxTemp", "Int"),
-        ("minTemp", "Int"),
-        ("prefMaxSpawnTemp", "Int"),
-        ("prefMinSpawnTemp", "Int")
+        ["maxSpawnTemp", "maxSpawningTemperature"],
+        ["minSpawnTemp", "minSpawningTemperature"],
+        ["maxTemp", "maxTemperature"],
+        ["minTemp", "minTemperature"],
+        ["prefMaxSpawnTemp", "preferredMaxSpawningTemperature"],
+        ["prefMinSpawnTemp", "preferredMinSpawningTemperature"]
     ],
     "species_info": {
         ("maxTemp", "minTemp"): ["suitable_temperature", "temperature", ">=", "100.0", "<="],
         ("maxSpawnTemp", "minSpawnTemp"): ["suitable_spawning_temperature", "temperature", ">=", "100.0", "<="],
         ("prefMaxSpawnTemp", "prefMinSpawnTemp"): ["preferred_spawning_temperature", "temperature", ">=", "100.0", "<="]
     },
-    "offset": "10.0"
+    "offset": "10.0",
+    "species_name": "Atlantic Cod"
 }
 
 @app.route('/new-request', methods=['POST'])
@@ -48,6 +49,7 @@ def new_request():
     parameters = data_parameters['parameters']
     species_info = data_parameters['species_info']
     offset = data_parameters['offset']
+    species_name = data_parameters['species_name']
 
     gen = Generator(name, field, parameters, species_info)
     graph_query = gen.generateQuery()
