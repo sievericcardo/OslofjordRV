@@ -2,11 +2,15 @@ import sys
 import json
 from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport
+import requests
 
 import os
 
 hasura_host = os.getenv("HASURA_HOST", "localhost")
 hasura_url = f"http://{hasura_host}:8080/v1/graphql"
+
+smol_host = os.getenv("SMOL_HOST", "localhost")
+smol_url = f"http://{smol_host}:8888/api/select"
 
 class DataProcessor:
     def __init__(self, name, type, base_property, parameters, species_info, offset):
@@ -64,46 +68,15 @@ class DataProcessor:
             i += 1
         f.close()
 
-        query = "query myQuery {{\n" + \
-                " " * 8 +self.name + "(name: \"" + species_name + "\") {{\n"
-        for parameter, _ in self.parameters:
-            query += " " * 12 + parameter + "\n"
-        query += " " * 8 + "}}\n"
-        query += " " * 4 + "}}"
+        query_params = {
+            "parameters": [[param[0], param[1]] for param in self.parameters],
+            "name": species_name
+        }
 
-        print(query)
+        response = requests.post(smol_url, json=query_params)
 
-        new_species_query = gql(f'''
-            query myQuery {{
-                fishFields(name: "{species_name}") {{
-                    prefMinSpawnTemp
-                    prefMaxSpawnTemp
-                    name
-                    minTemp
-                    minSpawnTemp
-                    maxTemp
-                    maxSpawnTemp
-                }}
-            }}
-        ''')
-
-        print(new_species_query)
-
-        indentation = ' ' * 20
-        parameters = '\n'.join([indentation + parameter for parameter, _ in self.parameters])
-        query = f"""
-        query myQuery {{
-            {self.name}(name: "{species_name}") {{
-                {parameters}
-            }}
-        }}
-        """
-        species_query = gql(query)
-
-        species_response = self.client.execute(species_query)
-
-        # #Isolate the values we are interested in, and format them according to TeSSLa syntax
-        items = species_response[self.name][0]
+        # Isolate the values we are interested in, and format them according to TeSSLa syntax
+        items = json.loads(response.content)
         for x in items:
             if isinstance(items[x], int):
                 items[x] = float(items[x])
